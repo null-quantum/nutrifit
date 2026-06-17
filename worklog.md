@@ -423,3 +423,27 @@ Verification (Agent Browser):
 
 Stage Summary:
 - The AI Copilot is now a floating chatbot widget (bottom-right, closable via X/Escape/backdrop) available on every dashboard tab — users can no longer get stuck. Uses the uploaded blue chatbot icon as the launcher + avatar. Full chat logic preserved (userContext-aware AI replies, quick templates, typing indicator). Old menu tab removed entirely.
+
+---
+Task ID: DEPLOY-PREP
+Agent: orchestrator (main)
+Task: Prepare the project for GitHub + Vercel deployment (dual-provider AI, Vercel-safe build, deploy docs)
+
+Work Log:
+- Installed @google/generative-ai (0.24.1).
+- src/lib/ai.ts: rewrote as DUAL-PROVIDER — if GEMINI_API_KEY env var is set, uses Google Gemini (gemini-2.5-flash) for production/Vercel; otherwise falls back to z-ai-web-dev-sdk for the sandbox. Same aiComplete()/extractJSON() API, so all routes (chat/generate-workout/analyze-meal) work unchanged in both environments.
+- package.json: fixed build script (removed sandbox-only `cp` commands → just `next build`), added `postinstall: prisma generate` (Vercel needs this to generate the Prisma Client after install), changed start to `next start`, renamed project to "nutrifit" v1.0.0.
+- .env.example (NEW): documents DATABASE_URL (SQLite for dev, Postgres for Vercel), JWT_SECRET, GEMINI_API_KEY, GEMINI_MODEL with inline instructions.
+- .gitignore: added `!.env.example` exception so the template is committed but real .env stays ignored.
+- DEPLOY.md (NEW): comprehensive step-by-step guide — push to GitHub, create Postgres (Vercel/Neon/Supabase), swap Prisma provider sqlite→postgresql (one line), deploy on Vercel with env vars, create tables via db:push, verify, troubleshooting.
+- Verified sandbox still works: login → chatbot → "Quick test: say hello" → AI replied with profile-aware response (fell back to z-ai SDK since no GEMINI_API_KEY here). POST /api/ai/chat 200.
+- Committed all (6 files, +256/-10).
+
+Stage Summary:
+- Project is deployment-ready. The user's path to Vercel:
+  1. git remote add origin + push to GitHub
+  2. Create a Postgres DB (Vercel Postgres / Neon / Supabase free tier)
+  3. Edit prisma/schema.prisma: provider "sqlite" → "postgresql" (one line)
+  4. Import repo on Vercel, add env vars (DATABASE_URL, JWT_SECRET, GEMINI_API_KEY, GEMINI_MODEL)
+  5. Deploy, then run `db:push` against the prod DB to create tables
+- Full details in DEPLOY.md. The AI layer auto-detects Gemini vs sandbox, so the same code runs in both. SQLite limitation on Vercel (ephemeral FS) is the reason for the Postgres swap — documented clearly.
