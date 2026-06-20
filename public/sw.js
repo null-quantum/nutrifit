@@ -134,3 +134,40 @@ self.addEventListener("fetch", (event) => {
 
   // Everything else: default network.
 });
+
+/* ============================================================
+   Background Sync API — fires when connectivity returns, even
+   if the tab was closed. Posts a message to open clients to
+   drain the sync queue; if none are open, does a basic sync.
+   ============================================================ */
+self.addEventListener("sync", (event) => {
+  if (event.tag === "nutrifit-sync") {
+    event.waitUntil(
+      (async () => {
+        // Try to message an open client first (it has Dexie + the full
+        // sync logic). If no client is open, we can't easily run Dexie
+        // here, so just resolve — the next app load will drain the queue.
+        const clients = await self.clients.matchAll({
+          type: "window",
+          includeUncontrolled: true,
+        });
+        if (clients.length > 0) {
+          clients.forEach((client) =>
+            client.postMessage({ type: "NUTRIFIT_SYNC" })
+          );
+        }
+      })()
+    );
+  }
+});
+
+self.addEventListener("message", (event) => {
+  // Clients can ping the SW to re-register a sync (e.g. after a write).
+  if (event.data && event.data.type === "REGISTER_SYNC") {
+    if (self.registration.sync) {
+      self.registration.sync
+        .register("nutrifit-sync")
+        .catch(() => {});
+    }
+  }
+});

@@ -5,11 +5,40 @@ import type {
   UserProfile,
   DailyLogEntry,
 } from "@/lib/types";
-import { localGet, localSet, localDel, KEYS } from "@/lib/localDb";
+import {
+  getUser,
+  saveUser,
+  patchUser,
+  clearUser,
+} from "@/lib/offline/repositories/userRepository";
+import {
+  getLog,
+  saveLog as repoSaveLog,
+  getWeeklyLogs,
+  addMeal,
+  removeMeal,
+  getMealsForToday,
+} from "@/lib/offline/repositories/dailyLogRepository";
+import {
+  getChatHistory,
+  addChatMessage,
+  clearChatHistory,
+} from "@/lib/offline/repositories/chatRepository";
+import { enqueue } from "@/lib/offline/syncQueue";
+import { buildOnboardedFlatUser } from "@/lib/nutrition";
+
+// Re-export repository functions + chat for the UI.
+export {
+  getMealsForToday,
+  addMeal,
+  removeMeal,
+  getChatHistory,
+  addChatMessage,
+  clearChatHistory,
+};
 
 /**
- * Bearer-token fallback for the HTTP-only JWT cookie (cross-site iframe
- * preview support).
+ * Bearer-token for the JWT cookie (cross-site iframe preview support).
  */
 const TOKEN_KEY = "nutrifit_token";
 
@@ -28,19 +57,14 @@ export function setToken(token: string | null) {
     if (token) localStorage.setItem(TOKEN_KEY, token);
     else localStorage.removeItem(TOKEN_KEY);
   } catch {
-    // ignore storage errors (private mode, etc.)
+    // ignore
   }
 }
 
-/** True when the browser reports no network connection. */
 export function isOnline(): boolean {
-  return typeof navigator !== "undefined" ? navigator.onLine : true;
+  return typeof navigator !== "undefined" ? navigator.onLine : false;
 }
 
-/**
- * Friendly error thrown by AI methods when the device is offline.
- * UI catch blocks surface `err.message` directly.
- */
 export class OfflineError extends Error {
   constructor(
     message = "You're offline. AI features need an internet connection."
@@ -58,9 +82,7 @@ async function request<T>(
     "Content-Type": "application/json",
   };
   const token = getToken();
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(url, {
     credentials: "include",
@@ -83,53 +105,9 @@ async function request<T>(
 }
 
 /* ------------------------------------------------------------------ */
-/* Local-first daily-log helpers (IndexedDB)                          */
+/* Auth — must hit the server (credential verification + JWT).        */
+/* After auth, the user profile is cached to Dexie.                    */
 /* ------------------------------------------------------------------ */
-
-function todayStr(): string {
-  return new Date().toISOString().split("T")[0];
-}
-
-function last7DateStrings(): string[] {
-  const out: string[] = [];
-  const now = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    out.push(d.toISOString().split("T")[0]);
-  }
-  return out;
-}
-
-async function readLocalLogs(): Promise<DailyLogEntry[]> {
-  return (await localGet<DailyLogEntry[]>(KEYS.logs)) ?? [];
-}
-
-async function writeLocalLogs(logs: DailyLogEntry[]): Promise<void> {
-  await localSet(KEYS.logs, logs);
-}
-
-/** Background-sync: push any locally-queued logs to the server when online. */
-export async function syncPendingLogs(): Promise<void> {
-  if (!isOnline()) return;
-  const pending = (await localGet<DailyLogEntry[]>(KEYS.pendingSync)) ?? [];
-  if (pending.length === 0) return;
-  for (const entry of pending) {
-    try {
-      await request<{ message: string; log: DailyLogEntry }>(
-        "/api/user/log",
-        {
-          method: "POST",
-          body: JSON.stringify(entry),
-        }
-      );
-    } catch {
-      // leave in queue for next attempt
-      return;
-    }
-  }
-  await localDel(KEYS.pendingSync);
-}
 
 export const api = {
   register: async (
@@ -139,7 +117,7 @@ export const api = {
   ): Promise<{ user: SafeUser }> => {
     if (!isOnline()) {
       throw new OfflineError(
-        "You're offline. Sign up needs a connection the first time."
+        "Sign up needs a connection the first time."
       );
     }
     const res = await request<{
@@ -151,7 +129,13 @@ export const api = {
       body: JSON.stringify({ name, email, password }),
     });
     if (res.token) setToken(res.token);
-    await localSet(KEYS.user, res.user);
+    // Cache to Dexie (source of truth for all future reads).
+    await saveUser({
+      name: res.user.name,
+      email: res.user.email,
+      onboardingDone: res.user.onboardingDone,
+      createdAt: res.user.createdAt,
+    });
     return { user: res.user };
   },
 
@@ -161,7 +145,7 @@ export const api = {
   ): Promise<{ user: SafeUser }> => {
     if (!isOnline()) {
       throw new OfflineError(
-        "You're offline. Sign in needs a connection the first time."
+        "Sign in needs a connection the first time."
       );
     }
     const res = await request<{
@@ -173,7 +157,24 @@ export const api = {
       body: JSON.stringify({ email, password }),
     });
     if (res.token) setToken(res.token);
-    await localSet(KEYS.user, res.user);
+    // Cache the full profile to Dexie.
+    await saveUser({
+      name: res.user.name,
+      email: res.user.email,
+      onboardingDone: res.user.onboardingDone,
+      age: res.user.age,
+      sex: res.user.sex,
+      height: res.user.height,
+      weight: res.user.weight,
+      activityLevel: res.user.activityLevel,
+      goal: res.user.goal,
+      targetCalories: res.user.targetCalories,
+      macros: res.user.macros,
+      stepGoal: res.user.stepGoal,
+      exerciseType: res.user.exerciseType,
+      dietPreference: res.user.dietPreference,
+      createdAt: res.user.createdAt,
+    });
     return { user: res.user };
   },
 
@@ -183,30 +184,40 @@ export const api = {
         method: "POST",
       });
     } catch {
-      // ignore network errors on logout
+      // ignore
     }
     setToken(null);
-    await localDel(KEYS.user);
+    await clearUser();
+    await clearChatHistory();
   },
 
-  /** GET /api/user/profile — online first, local fallback when offline. */
+  /** LOCAL-FIRST: read user from Dexie (instant, offline-capable). */
   profile: async (): Promise<SafeUser> => {
-    if (isOnline()) {
-      try {
-        const user = await request<SafeUser>("/api/user/profile", {
-          method: "GET",
-        });
-        await localSet(KEYS.user, user);
-        return user;
-      } catch {
-        // fall through to local
-      }
-    }
-    const local = await localGet<SafeUser>(KEYS.user);
+    const local = await getUser();
     if (!local) throw new Error("No local session");
-    return local;
+    // Map LocalUser → SafeUser (flat shape the UI expects).
+    return {
+      id: local.id,
+      name: local.name,
+      email: local.email,
+      onboardingDone: local.onboardingDone,
+      age: local.age,
+      sex: local.sex,
+      height: local.height,
+      weight: local.weight,
+      activityLevel: local.activityLevel,
+      goal: local.goal,
+      targetCalories: local.targetCalories,
+      macros: local.macros,
+      stepGoal: local.stepGoal,
+      exerciseType: local.exerciseType,
+      dietPreference: local.dietPreference,
+      createdAt: local.createdAt,
+    };
   },
 
+  /** LOCAL-FIRST onboarding: compute TDEE client-side, save to Dexie,
+   *  enqueue sync. Works fully offline. */
   onboarding: async (payload: {
     age: number;
     gender?: string;
@@ -217,20 +228,6 @@ export const api = {
     exerciseType: string;
     dietPreference: string;
   }): Promise<{ user: SafeUser; message?: string }> => {
-    if (isOnline()) {
-      try {
-        const res = await request<{ user: SafeUser; message?: string }>(
-          "/api/user/onboarding",
-          { method: "POST", body: JSON.stringify(payload) }
-        );
-        await localSet(KEYS.user, res.user);
-        return res;
-      } catch {
-        // fall through to local computation
-      }
-    }
-    // Offline (or server unreachable): compute TDEE/macros client-side.
-    const { buildOnboardedFlatUser } = await import("@/lib/nutrition");
     const sex = (payload.sex ?? payload.gender ?? "male") as "male" | "female";
     const flat = buildOnboardedFlatUser({
       age: payload.age,
@@ -241,23 +238,38 @@ export const api = {
       exerciseType: payload.exerciseType,
       dietPreference: payload.dietPreference,
     });
-    const local = await localGet<SafeUser>(KEYS.user);
-    const user: SafeUser = {
-      id: local?.id ?? "local-user",
-      name: local?.name ?? "Local Athlete",
-      email: local?.email ?? "local@nutrifit.app",
-      createdAt: local?.createdAt ?? new Date().toISOString(),
+    const existing = await getUser();
+    const saved = await saveUser({
+      name: existing?.name ?? "Local Athlete",
+      email: existing?.email ?? "local@nutrifit.app",
+      createdAt: existing?.createdAt ?? new Date().toISOString(),
       ...flat,
+    });
+    // Enqueue sync (so the server gets the onboarding when online).
+    await enqueue("onboarding", "POST", payload);
+    return {
+      user: {
+        id: saved.id,
+        name: saved.name,
+        email: saved.email,
+        onboardingDone: saved.onboardingDone,
+        age: saved.age,
+        sex: saved.sex,
+        height: saved.height,
+        weight: saved.weight,
+        activityLevel: saved.activityLevel,
+        goal: saved.goal,
+        targetCalories: saved.targetCalories,
+        macros: saved.macros,
+        stepGoal: saved.stepGoal,
+        exerciseType: saved.exerciseType,
+        dietPreference: saved.dietPreference,
+        createdAt: saved.createdAt,
+      },
     };
-    await localSet(KEYS.user, user);
-    return { user };
   },
 
-  /**
-   * PUT /api/user/profile — update name + biometric profile (recomputes
-   * TDEE/macros server-side when biometrics change). Offline-aware: if
-   * the server is unreachable, recomputes locally and saves to IndexedDB.
-   */
+  /** LOCAL-FIRST profile update: save to Dexie, enqueue sync. */
   updateProfile: async (payload: {
     name?: string;
     age?: number;
@@ -268,30 +280,19 @@ export const api = {
     exerciseType?: string;
     dietPreference?: string;
   }): Promise<SafeUser> => {
-    if (isOnline()) {
-      try {
-        const user = await request<SafeUser>("/api/user/profile", {
-          method: "PUT",
-          body: JSON.stringify(payload),
-        });
-        await localSet(KEYS.user, user);
-        return user;
-      } catch {
-        // fall through to local computation
-      }
-    }
-    // Offline: recompute TDEE/macros locally from the new biometrics.
-    const { buildOnboardedFlatUser } = await import("@/lib/nutrition");
-    const local = await localGet<SafeUser>(KEYS.user);
-    if (!local) throw new Error("No local session");
-    const age = payload.age ?? local.age ?? 25;
-    const sex = (payload.sex ?? local.sex ?? "male") as "male" | "female";
-    const height = payload.height ?? local.height ?? 170;
-    const weight = payload.weight ?? local.weight ?? 70;
-    const stepGoal = payload.stepGoal ?? local.stepGoal ?? 10000;
-    const exerciseType = payload.exerciseType ?? local.exerciseType ?? "Standard";
+    const existing = await getUser();
+    if (!existing) throw new Error("No local session");
+
+    // Recompute TDEE/macros if biometrics changed.
+    const age = payload.age ?? existing.age ?? 25;
+    const sex = (payload.sex ?? existing.sex ?? "male") as "male" | "female";
+    const height = payload.height ?? existing.height ?? 170;
+    const weight = payload.weight ?? existing.weight ?? 70;
+    const stepGoal = payload.stepGoal ?? existing.stepGoal ?? 10000;
+    const exerciseType = payload.exerciseType ?? existing.exerciseType ?? "Standard";
     const dietPreference =
-      payload.dietPreference ?? local.dietPreference ?? "Standard Balanced";
+      payload.dietPreference ?? existing.dietPreference ?? "Standard Balanced";
+
     const flat = buildOnboardedFlatUser({
       age,
       sex,
@@ -301,16 +302,45 @@ export const api = {
       exerciseType,
       dietPreference,
     });
-    const user: SafeUser = {
-      ...local,
-      name: payload.name ?? local.name,
+    const updated = await patchUser({
+      name: payload.name ?? existing.name,
       ...flat,
+    });
+    if (!updated) throw new Error("Failed to update profile");
+
+    // Enqueue sync.
+    await enqueue("profile", "PUT", {
+      name: updated.name,
+      age,
+      sex,
+      height,
+      weight,
+      stepGoal,
+      exerciseType,
+      dietPreference,
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      email: updated.email,
+      onboardingDone: updated.onboardingDone,
+      age: updated.age,
+      sex: updated.sex,
+      height: updated.height,
+      weight: updated.weight,
+      activityLevel: updated.activityLevel,
+      goal: updated.goal,
+      targetCalories: updated.targetCalories,
+      macros: updated.macros,
+      stepGoal: updated.stepGoal,
+      exerciseType: updated.exerciseType,
+      dietPreference: updated.dietPreference,
+      createdAt: updated.createdAt,
     };
-    await localSet(KEYS.user, user);
-    return user;
   },
 
-  /** POST /api/user/log — local-first (IndexedDB), background server sync. */
+  /** LOCAL-FIRST daily log: save to Dexie instantly, enqueue sync. */
   saveLog: async (payload: {
     date?: string;
     calories?: number;
@@ -322,81 +352,56 @@ export const api = {
     sleep?: number;
     exercises?: Exercise[];
   }): Promise<{ message: string; log: DailyLogEntry }> => {
-    const date = payload.date ?? todayStr();
-    const logs = await readLocalLogs();
-    const idx = logs.findIndex((l) => l.date === date);
-    const entry: DailyLogEntry = {
-      id: idx >= 0 ? logs[idx].id : `log-${date}`,
-      userId: "local",
-      date,
-      calories: Number(payload.calories ?? 0),
-      protein: Number(payload.protein ?? 0),
-      carbs: Number(payload.carbs ?? 0),
-      fat: Number(payload.fat ?? 0),
-      steps: Number(payload.steps ?? 0),
-      water: Number(payload.water ?? 0),
-      sleep: Number(payload.sleep ?? 0),
-      exercises: payload.exercises ?? [],
+    const saved = await repoSaveLog(payload);
+    // Enqueue sync (server gets the full day's log).
+    await enqueue("log", "POST", {
+      date: saved.date,
+      calories: saved.calories,
+      protein: saved.protein,
+      carbs: saved.carbs,
+      fat: saved.fat,
+      steps: saved.steps,
+      water: saved.water,
+      sleep: saved.sleep,
+      exercises: saved.exercises ?? [],
+    });
+    return {
+      message: "Saved locally",
+      log: {
+        id: saved.date,
+        userId: "local",
+        date: saved.date,
+        calories: saved.calories,
+        protein: saved.protein,
+        carbs: saved.carbs,
+        fat: saved.fat,
+        steps: saved.steps,
+        water: saved.water,
+        sleep: saved.sleep,
+        exercises: (saved.exercises as Exercise[]) ?? [],
+      },
     };
-    if (idx >= 0) logs[idx] = entry;
-    else logs.push(entry);
-    await writeLocalLogs(logs);
-
-    // Background-sync to the server when online (best-effort).
-    if (isOnline()) {
-      request<{ message: string; log: DailyLogEntry }>("/api/user/log", {
-        method: "POST",
-        body: JSON.stringify(entry),
-      }).catch(() => {
-        // queue for later if it fails
-        localGet<DailyLogEntry[]>(KEYS.pendingSync).then((q) => {
-          const queue = q ?? [];
-          if (!queue.some((e) => e.date === entry.date)) queue.push(entry);
-          localSet(KEYS.pendingSync, queue);
-        });
-      });
-    } else {
-      const queue = (await localGet<DailyLogEntry[]>(KEYS.pendingSync)) ?? [];
-      if (!queue.some((e) => e.date === entry.date)) queue.push(entry);
-      await localSet(KEYS.pendingSync, queue);
-    }
-
-    return { message: "Log saved locally", log: entry };
   },
 
-  /** GET /api/user/logs/weekly — local-first, refreshes from server online. */
+  /** LOCAL-FIRST weekly logs: read from Dexie (instant). */
   weeklyLogs: async (): Promise<DailyLogEntry[]> => {
-    const dates = last7DateStrings();
-    const local = await readLocalLogs();
-    let result = local.filter((l) => dates.includes(l.date));
-
-    if (isOnline()) {
-      try {
-        const remote = await request<DailyLogEntry[]>(
-          "/api/user/logs/weekly",
-          { method: "GET" }
-        );
-        // merge remote over local by date, keep any local-only entries
-        const byDate = new Map<string, DailyLogEntry>();
-        for (const l of result) byDate.set(l.date, l);
-        for (const r of remote) byDate.set(r.date, r);
-        result = dates
-          .map((d) => byDate.get(d))
-          .filter((x): x is DailyLogEntry => !!x);
-        // persist merged back to local
-        const merged = [...local];
-        for (const r of remote) {
-          const i = merged.findIndex((m) => m.date === r.date);
-          if (i >= 0) merged[i] = r;
-          else merged.push(r);
-        }
-        await writeLocalLogs(merged);
-      } catch {
-        // keep local result
-      }
-    }
-    return result;
+    const localLogs = await getWeeklyLogs();
+    return localLogs.map((l) => ({
+      id: l.date,
+      userId: "local",
+      date: l.date,
+      calories: l.calories,
+      protein: l.protein,
+      carbs: l.carbs,
+      fat: l.fat,
+      steps: l.steps,
+      water: l.water,
+      sleep: l.sleep,
+      exercises: (l.exercises as Exercise[]) ?? [],
+    }));
   },
+
+  // --- AI features methods (online-only, with friendly offline errors) ---
 
   generateWorkout: async (payload: {
     fitnessLevel?: string;
@@ -427,9 +432,38 @@ export const api = {
     );
   },
 
+  /** POST /api/ai/analyze-meal-photo — AI vision meal analysis from a photo. */
+  analyzeMealPhoto: async (image: string, mimeType: string) => {
+    if (!isOnline()) {
+      throw new OfflineError(
+        "Photo analysis needs a connection. Please reconnect to analyze meal photos."
+      );
+    }
+    return request<{ analysis: MealEstimate }>(
+      "/api/ai/analyze-meal-photo",
+      { method: "POST", body: JSON.stringify({ image, mimeType }) }
+    );
+  },
+
   chat: async (payload: {
     message: string;
     userContext?: Partial<SafeUser>;
+    chatHistory?: { role: "assistant" | "user"; text: string }[];
+    recentLogs?: {
+      date: string;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      steps: number;
+    }[];
+    todayMeals?: {
+      text: string;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+    }[];
   }): Promise<{ reply: string }> => {
     if (!isOnline()) {
       throw new OfflineError(
@@ -437,6 +471,39 @@ export const api = {
       );
     }
     return request<{ reply: string }>("/api/ai/chat", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** POST /api/ai/weekly-report — AI-generated weekly nutrition summary. */
+  weeklyReport: async (payload: {
+    userContext?: Partial<SafeUser>;
+    recentLogs: {
+      date: string;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      steps: number;
+    }[];
+  }): Promise<{
+    summary: string;
+    insights: string[];
+    recommendations: string[];
+    adherenceScore: number;
+  }> => {
+    if (!isOnline()) {
+      throw new OfflineError(
+        "Weekly report generation needs a connection."
+      );
+    }
+    return request<{
+      summary: string;
+      insights: string[];
+      recommendations: string[];
+      adherenceScore: number;
+    }>("/api/ai/weekly-report", {
       method: "POST",
       body: JSON.stringify(payload),
     });

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { NotificationManager } from "@/components/pwa/NotificationManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,6 +89,7 @@ export default function RootLayout({
         <RegisterSW />
         <OfflineBanner />
         <InstallPrompt />
+        <NotificationManager />
         {children}
         <Toaster />
       </body>

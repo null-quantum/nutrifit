@@ -1,18 +1,14 @@
-// Prisma schema for NutriFit — AI-powered health & nutrition platform
+// Prisma schema for NutriFit — PostgreSQL variant for Vercel production.
+// Same models as schema.prisma (SQLite), just with provider = "postgresql".
+// This file is used when DATABASE_PROVIDER=postgresql (see package.json scripts).
 // Docs: https://pris.ly/d/prisma-schema
-//
-// NOTE: This is the SQLite schema used for local dev in this sandbox.
-// For Vercel production (PostgreSQL), use prisma/schema.postgres.prisma —
-// run `bun run db:use-postgres` to swap it in, or set it up at deploy time.
-// The `db:provider` script auto-selects the right schema based on
-// DATABASE_PROVIDER env var.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -38,7 +34,7 @@ model User {
 model DailyLog {
   id        String @id @default(cuid())
   userId    String
-  /// YYYY-MM-DD (string keeps SQLite lookups simple & timezone-safe).
+  /// YYYY-MM-DD (string keeps lookups simple & timezone-safe).
   date      String
   calories  Float  @default(0)
   protein   Float  @default(0)

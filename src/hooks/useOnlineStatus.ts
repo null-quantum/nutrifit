@@ -4,15 +4,19 @@ import { useEffect, useState } from "react";
 
 /**
  * Tracks the browser's online/offline status reactively.
- * Online = `navigator.onLine`; updates on the window `online`/`offline`
- * events. Used by the global OfflineBanner and to trigger sync-on-online.
+ *
+ * SSR-safe: always initializes to `true` (online) so the server-rendered
+ * HTML matches the first client render. The actual `navigator.onLine`
+ * value is read in a `useEffect` (after hydration) to avoid mismatches.
  */
 export function useOnlineStatus(): boolean {
-  const [online, setOnline] = useState(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true
-  );
+  const [online, setOnline] = useState(true);
 
   useEffect(() => {
+    // Read the real status after mount (client-only) — this runs after
+    // hydration so it can't cause a server/client mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOnline(navigator.onLine);
     const goOnline = () => setOnline(true);
     const goOffline = () => setOnline(false);
     window.addEventListener("online", goOnline);

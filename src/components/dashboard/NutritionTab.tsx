@@ -23,6 +23,8 @@ import {
   Loader2,
   CheckCircle,
   AlertCircle,
+  Camera,
+  X,
 } from "lucide-react";
 
 const quickPrompts = [
@@ -83,6 +85,15 @@ export default function NutritionTab() {
     [],
   );
 
+  // Photo analysis state
+  const [photo, setPhoto] = useState<string | null>(null); // base64 data URL
+  const [photoName, setPhotoName] = useState("");
+  const [photoLoading, setPhotoLoading] = useState(false);
+  const [photoAnalysis, setPhotoAnalysis] = useState<MealEstimate | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const [photoSaved, setPhotoSaved] = useState(false);
+  const fileInputRef = useState<HTMLInputElement | null>(null)[0];
+
   const analyzeMeal = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mealInput.trim()) return;
@@ -126,6 +137,88 @@ export default function NutritionTab() {
   };
 
   const historyItems = history;
+
+  // --- Photo analysis handlers ---
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Please select an image file.");
+      return;
+    }
+    if (file.size > 5_000_000) {
+      setPhotoError("Image is too large (max 5MB).");
+      return;
+    }
+    setPhotoError("");
+    setPhotoAnalysis(null);
+    setPhotoName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhoto(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const analyzePhoto = async () => {
+    if (!photo) return;
+    setPhotoLoading(true);
+    setPhotoError("");
+    setPhotoAnalysis(null);
+    setPhotoSaved(false);
+    try {
+      // Extract base64 + mimeType from the data URL.
+      const [meta, base64] = photo.split(",");
+      const mimeType = meta.match(/data:(.*?);/)?.[1] ?? "image/jpeg";
+      const res = await api.analyzeMealPhoto(base64, mimeType);
+      setPhotoAnalysis(res.analysis);
+    } catch (err) {
+      setPhotoError(
+        err instanceof Error ? err.message : "Failed to analyze photo."
+      );
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
+
+  const savePhotoToLog = async () => {
+    if (!photoAnalysis) return;
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      await api.saveLog({
+        date: today,
+        calories: photoAnalysis.calories,
+        protein: photoAnalysis.protein,
+        carbs: photoAnalysis.carbs,
+        fat: photoAnalysis.fat,
+      });
+      // Also add to meal history
+      try {
+        const { addMeal } = await import("@/lib/api");
+        await addMeal({
+          text: photoName || "Photo meal",
+          calories: photoAnalysis.calories,
+          protein: photoAnalysis.protein,
+          carbs: photoAnalysis.carbs,
+          fat: photoAnalysis.fat,
+          date: today,
+        });
+      } catch { /* ignore */ }
+      setPhotoSaved(true);
+      setTimeout(() => setPhotoSaved(false), 3000);
+    } catch {
+      setPhotoError("Failed to save to daily log");
+    }
+  };
+
+  const clearPhoto = () => {
+    setPhoto(null);
+    setPhotoName("");
+    setPhotoAnalysis(null);
+    setPhotoError("");
+    setPhotoSaved(false);
+  };
 
   return (
     <motion.div
@@ -217,6 +310,151 @@ export default function NutritionTab() {
                 </motion.button>
               ))}
             </div>
+          </GlassCard>
+
+          {/* PHOTO ANALYSIS CARD */}
+          <GlassCard className="p-6 space-y-4">
+            <div className="flex items-center gap-2.5 text-slate-800 font-black text-lg tracking-tight mb-2">
+              <Camera size={20} className="text-cyan-500" />
+              <span>Snap a Photo</span>
+            </div>
+            <p className="text-xs text-slate-400 font-semibold -mt-2 mb-2">
+              Upload or take a photo of your meal — AI vision estimates the macros.
+            </p>
+
+            {photoError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-xs font-bold flex items-center gap-2">
+                <AlertCircle size={14} /> {photoError}
+              </div>
+            )}
+
+            {!photo ? (
+              <label className="block cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
+                <div className="border-2 border-dashed border-slate-300 rounded-2xl py-12 flex flex-col items-center justify-center gap-3 hover:border-cyan-400 hover:bg-cyan-50/30 transition-all">
+                  <div className="p-4 bg-cyan-50 text-cyan-500 rounded-2xl">
+                    <Camera size={28} />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-black text-slate-700">
+                      Tap to upload or take a photo
+                    </p>
+                    <p className="text-xs text-slate-400 font-semibold mt-1">
+                      JPG, PNG · max 5MB
+                    </p>
+                  </div>
+                </div>
+              </label>
+            ) : (
+              <div className="space-y-4">
+                {/* Preview */}
+                <div className="relative rounded-2xl overflow-hidden">
+                  <img
+                    src={photo}
+                    alt="Meal preview"
+                    className="w-full max-h-64 object-cover"
+                  />
+                  <button
+                    onClick={clearPhoto}
+                    className="absolute top-2 right-2 size-8 rounded-full bg-slate-900/70 text-white flex items-center justify-center hover:bg-slate-900 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Analyze button */}
+                {!photoAnalysis && (
+                  <motion.button
+                    onClick={analyzePhoto}
+                    disabled={photoLoading}
+                    whileHover={{ scale: 1.01, y: -1 }}
+                    whileTap={{ scale: 0.985 }}
+                    transition={springSoft}
+                    className="nf-btn-gradient nf-shimmer w-full text-white font-black text-sm uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  >
+                    {photoLoading ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" /> Analyzing Photo...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={16} /> Analyze Photo
+                      </>
+                    )}
+                  </motion.button>
+                )}
+
+                {/* Photo analysis result */}
+                {photoAnalysis && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="bg-gradient-to-br from-cyan-50 to-teal-50 border border-cyan-200/60 rounded-2xl p-4 space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-cyan-700 uppercase tracking-widest flex items-center gap-1.5">
+                        <Sparkles size={13} /> AI Estimate
+                      </span>
+                      {photoSaved && (
+                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                          <CheckCircle size={12} /> Saved!
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      {[
+                        { k: "Calories", v: photoAnalysis.calories, c: "text-orange-600", u: "" },
+                        { k: "Protein", v: photoAnalysis.protein, c: "text-rose-600", u: "g" },
+                        { k: "Carbs", v: photoAnalysis.carbs, c: "text-amber-600", u: "g" },
+                        { k: "Fat", v: photoAnalysis.fat, c: "text-sky-600", u: "g" },
+                      ].map((s) => (
+                        <div key={s.k} className="bg-white/60 rounded-xl py-2">
+                          <div className={`text-lg font-black nf-stat ${s.c}`}>
+                            <AnimatedNumber value={s.v} />
+                            {s.u}
+                          </div>
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            {s.k}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {photoAnalysis.items && photoAnalysis.items.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {photoAnalysis.items.map((item, i) => (
+                          <span
+                            key={i}
+                            className="text-[11px] font-bold bg-white/70 px-2.5 py-1 rounded-full text-slate-600 border border-slate-200/60"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {photoAnalysis.tip && (
+                      <p className="text-xs text-slate-500 font-medium italic">
+                        💡 {photoAnalysis.tip}
+                      </p>
+                    )}
+                    <motion.button
+                      onClick={savePhotoToLog}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-slate-900 text-white font-black text-sm py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
+                    >
+                      <ShieldCheck size={16} /> Save to Daily Log
+                    </motion.button>
+                  </motion.div>
+                )}
+              </div>
+            )}
           </GlassCard>
 
           {/* Error */}

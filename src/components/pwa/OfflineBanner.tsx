@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CloudOff, CheckCircle2 } from "lucide-react";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useAuthStore } from "@/store/useAuthStore";
-import { syncPendingLogs } from "@/lib/api";
+import { processSyncQueue, pullFromServer } from "@/lib/offline/sync";
 
 /**
  * Global connectivity banner.
@@ -28,8 +28,9 @@ export function OfflineBanner() {
       wasOffline.current = true;
       return;
     }
-    // Came back online (or started online).
-    void syncPendingLogs();
+    // Came back online (or started online): pull fresh data + push queued writes.
+    void pullFromServer();
+    void processSyncQueue();
     void checkAuth();
     if (wasOffline.current) {
       // eslint-disable-next-line react-hooks/set-state-in-effect

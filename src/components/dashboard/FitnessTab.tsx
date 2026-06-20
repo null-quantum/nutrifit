@@ -49,60 +49,20 @@ const tierAccents: Record<string, { active: string; ring: string; text: string }
   };
 
 export default function FitnessTab({ user }: { user: SafeUser | null }) {
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof window !== "undefined" ? navigator.onLine : true,
-  );
+  // Initialize with safe defaults that match the server-rendered output.
+  // localStorage / navigator values are hydrated in a useEffect below to
+  // avoid SSR/client hydration mismatches.
+  const [isOnline, setIsOnline] = useState(true);
   const [syncingStatus, setSyncingStatus] = useState("");
 
-  // Hydrate local states directly from hard-drive cache on initial render pass
-  const [generatedRoutine, setGeneratedRoutine] = useState<Exercise[]>(() => {
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem("nutrifit_local_routine");
-      return cached ? JSON.parse(cached) : [];
-    }
-    return [];
-  });
-
-  const [hasGeneratedPlan, setHasGeneratedPlan] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !!localStorage.getItem("nutrifit_local_routine");
-    }
-    return false;
-  });
-
+  const [generatedRoutine, setGeneratedRoutine] = useState<Exercise[]>([]);
+  const [hasGeneratedPlan, setHasGeneratedPlan] = useState(false);
   const [completedExercises, setCompletedExercises] = useState<
     (string | number)[]
-  >(() => {
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem("nutrifit_local_progress");
-      return cached ? JSON.parse(cached) : [];
-    }
-    return [];
-  });
-
-  const [fitnessLevel, setFitnessLevel] = useState(() => {
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem("nutrifit_local_meta");
-      return cached ? JSON.parse(cached).fitnessLevel : "Intermediate";
-    }
-    return "Intermediate";
-  });
-
-  const [workoutFocus, setWorkoutFocus] = useState(() => {
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem("nutrifit_local_meta");
-      return cached ? JSON.parse(cached).workoutFocus : "Hypertrophy Strength";
-    }
-    return "Hypertrophy Strength";
-  });
-
-  const [equipment, setEquipment] = useState(() => {
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem("nutrifit_local_meta");
-      return cached ? JSON.parse(cached).equipment : "Dumbbells Only";
-    }
-    return "Dumbbells Only";
-  });
+  >([]);
+  const [fitnessLevel, setFitnessLevel] = useState("Intermediate");
+  const [workoutFocus, setWorkoutFocus] = useState("Hypertrophy Strength");
+  const [equipment, setEquipment] = useState("Dumbbells Only");
 
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [expandedExercise, setExpandedExercise] = useState<string | number | null>(
@@ -130,6 +90,33 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
       setTimeout(() => setSyncingStatus(""), 4000);
     }, 2000);
   };
+
+  // Hydrate from localStorage AFTER mount (client-only) to prevent
+  // SSR/client hydration mismatches.
+  useEffect(() => {
+    setIsOnline(navigator.onLine);
+    try {
+      const cachedRoutine = localStorage.getItem("nutrifit_local_routine");
+      if (cachedRoutine) {
+        const parsed = JSON.parse(cachedRoutine);
+        setGeneratedRoutine(parsed);
+        setHasGeneratedPlan(true);
+      }
+      const cachedProgress = localStorage.getItem("nutrifit_local_progress");
+      if (cachedProgress) {
+        setCompletedExercises(JSON.parse(cachedProgress));
+      }
+      const cachedMeta = localStorage.getItem("nutrifit_local_meta");
+      if (cachedMeta) {
+        const meta = JSON.parse(cachedMeta);
+        if (meta.fitnessLevel) setFitnessLevel(meta.fitnessLevel);
+        if (meta.workoutFocus) setWorkoutFocus(meta.workoutFocus);
+        if (meta.equipment) setEquipment(meta.equipment);
+      }
+    } catch {
+      // ignore malformed cache
+    }
+  }, []);
 
   useEffect(() => {
     const goOnline = () => {

@@ -11,7 +11,14 @@ import {
   Calendar,
   Flame,
   Footprints,
+  Sparkles,
+  Loader2,
+  FileText,
+  Lightbulb,
+  Target,
+  AlertCircle,
 } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 import {
   BarChart,
   Bar,
@@ -54,6 +61,44 @@ function getLast7Days(): AnalyticsDay[] {
 export default function AnalyticsTab() {
   const [data, setData] = useState<AnalyticsDay[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const user = useAuthStore((s) => s.user);
+
+  // Weekly report state
+  const [report, setReport] = useState<{
+    summary: string;
+    insights: string[];
+    recommendations: string[];
+    adherenceScore: number;
+  } | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState("");
+
+  const handleGenerateReport = async () => {
+    setReportLoading(true);
+    setReportError("");
+    setReport(null);
+    try {
+      const logs = await api.weeklyLogs();
+      const result = await api.weeklyReport({
+        userContext: user ?? undefined,
+        recentLogs: logs.map((l) => ({
+          date: l.date,
+          calories: l.calories,
+          protein: l.protein,
+          carbs: l.carbs,
+          fat: l.fat,
+          steps: l.steps,
+        })),
+      });
+      setReport(result);
+    } catch (err) {
+      setReportError(
+        err instanceof Error ? err.message : "Failed to generate report."
+      );
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchWeeklyAnalytics = async () => {
@@ -342,6 +387,142 @@ export default function AnalyticsTab() {
             />
           </AreaChart>
         </ResponsiveContainer>
+      </motion.div>
+
+      {/* AI WEEKLY REPORT */}
+      <motion.div
+        variants={riseItem}
+        className="nf-premium nf-aurora-border rounded-3xl p-6 space-y-5"
+      >
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-xl shadow-lg shadow-teal-500/20">
+              <FileText size={18} />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                AI Weekly Report
+              </h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Personalized insights from your week's data
+              </p>
+            </div>
+          </div>
+          <motion.button
+            onClick={handleGenerateReport}
+            disabled={reportLoading}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="nf-btn-gradient nf-shimmer px-5 py-2.5 rounded-xl font-black text-sm uppercase tracking-wider flex items-center gap-2 disabled:opacity-60"
+          >
+            {reportLoading ? (
+              <>
+                <Loader2 size={15} className="animate-spin" /> Analyzing…
+              </>
+            ) : (
+              <>
+                <Sparkles size={15} /> Generate Report
+              </>
+            )}
+          </motion.button>
+        </div>
+
+        {reportError && (
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-2">
+            <AlertCircle size={14} /> {reportError}
+          </div>
+        )}
+
+        {report && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-5"
+          >
+            {/* Adherence score ring */}
+            <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-slate-200/60">
+              <div className="relative size-16 shrink-0">
+                <svg className="size-16 -rotate-90" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#e2e8f0" strokeWidth="6" />
+                  <motion.circle
+                    cx="32" cy="32" r="28" fill="none"
+                    stroke={report.adherenceScore >= 70 ? "#10b981" : report.adherenceScore >= 40 ? "#f59e0b" : "#ef4444"}
+                    strokeWidth="6" strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 28}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 28 }}
+                    animate={{
+                      strokeDashoffset: 2 * Math.PI * 28 - (report.adherenceScore / 100) * 2 * Math.PI * 28,
+                    }}
+                    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xl font-black nf-stat text-slate-800">
+                    {report.adherenceScore}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                  Adherence Score
+                </p>
+                <p className="text-sm font-bold text-slate-700 mt-0.5">
+                  {report.adherenceScore >= 70
+                    ? "Great consistency this week! 🎉"
+                    : report.adherenceScore >= 40
+                    ? "Decent progress — room to improve. 💪"
+                    : "Let's get back on track next week. 📈"}
+                </p>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="p-4 bg-cyan-50/60 rounded-2xl border border-cyan-100/60">
+              <p className="text-sm font-semibold text-slate-700 leading-relaxed">
+                {report.summary}
+              </p>
+            </div>
+
+            {/* Insights */}
+            <div className="space-y-2">
+              <p className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <Lightbulb size={13} className="text-amber-500" /> Key Insights
+              </p>
+              {report.insights.map((insight, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + i * 0.08 }}
+                  className="flex items-start gap-2.5 p-3 bg-white/60 rounded-xl border border-slate-200/60"
+                >
+                  <span className="size-1.5 rounded-full bg-cyan-400 mt-2 shrink-0" />
+                  <p className="text-sm font-medium text-slate-600">{insight}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Recommendations */}
+            <div className="space-y-2">
+              <p className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <Target size={13} className="text-emerald-500" /> Recommendations for Next Week
+              </p>
+              {report.recommendations.map((rec, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.08 }}
+                  className="flex items-start gap-2.5 p-3 bg-emerald-50/60 rounded-xl border border-emerald-100/60"
+                >
+                  <span className="size-1.5 rounded-full bg-emerald-500 mt-2 shrink-0" />
+                  <p className="text-sm font-medium text-slate-600">{rec}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </motion.div>
   );

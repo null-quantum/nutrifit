@@ -1,9 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import { api, setToken, syncPendingLogs, isOnline } from "@/lib/api";
+import { api, setToken, isOnline } from "@/lib/api";
+import { processSyncQueue, pullFromServer, startBackgroundSync } from "@/lib/offline/sync";
 import type { SafeUser } from "@/lib/types";
-import { localGet, localDel, KEYS } from "@/lib/localDb";
 
 export type AppView = "landing" | "auth" | "onboarding" | "dashboard";
 
@@ -13,7 +13,7 @@ type AuthState = {
   isCheckingAuth: boolean;
   view: AppView;
   hasChecked: boolean;
-  /** True when the session is being served from local storage (offline). */
+  /** True when the session is being served from local Dexie (offline). */
   offlineMode: boolean;
 
   setView: (view: AppView) => void;
@@ -53,6 +53,14 @@ function viewForUser(user: SafeUser | null): AppView {
   return user.onboardingDone ? "dashboard" : "onboarding";
 }
 
+// Start the background sync once (on the client).
+let syncStarted = false;
+function ensureSyncStarted() {
+  if (syncStarted || typeof window === "undefined") return;
+  syncStarted = true;
+  startBackgroundSync();
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
@@ -65,8 +73,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   checkAuth: async () => {
     set({ isCheckingAuth: true });
+    ensureSyncStarted();
     try {
-      // api.profile() is online-first with a local fallback.
+      // LOCAL-FIRST: read user from Dexie (instant, offline-capable).
       const user = await api.profile();
       const wasOffline = !isOnline();
       set({
@@ -77,8 +86,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         hasChecked: true,
         offlineMode: wasOffline,
       });
-      // If we came online, push any queued logs.
-      if (!wasOffline) void syncPendingLogs();
+      // If online, pull fresh data from the server + push any queued writes.
+      if (!wasOffline) {
+        void pullFromServer();
+        void processSyncQueue();
+      }
     } catch {
       setToken(null);
       set({
@@ -100,6 +112,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       view: viewForUser(user),
       offlineMode: false,
     });
+    ensureSyncStarted();
     return user;
   },
 
@@ -111,12 +124,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       view: viewForUser(user),
       offlineMode: false,
     });
+    ensureSyncStarted();
     return user;
   },
 
   logout: async () => {
     await api.logout();
-    await localDel(KEYS.user);
     set({
       user: null,
       isAuthenticated: false,

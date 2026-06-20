@@ -37,6 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local database files
+*.db
+db/
+
 
 # typescript
 *.tsbuildinfo
@@ -51,5 +55,12 @@ test
 prompt
 
 server.log
-# Skills directory
+
+# Scaffold artifacts (not part of NutriFit)
 /skills/
+/examples/
+/download/
+/tool-results/
+/.zscripts/
+/upload/
+mini-services/

@@ -1,30 +1,28 @@
 import ZAI from "z-ai-web-dev-sdk";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 /**
  * Shared AI helper for NutriFit.
  *
- * Dual-provider: uses Google Gemini when GEMINI_API_KEY is set (production /
- * Vercel), and falls back to the z-ai-web-dev-sdk (sandbox) otherwise. This
- * keeps the sandbox working without a key while making the app deployable.
+ * Uses the NEW @google/genai SDK (supports Gemini 3.x models including
+ * gemini-3.1-flash-lite). Falls back to z-ai-web-dev-sdk in the sandbox.
  *
  * This module is server-only — never import from client code.
  */
 
 // --- Gemini (production) ---
-let geminiModel: ReturnType<
-  GoogleGenerativeAI["getGenerativeModel"]
-> | null = null;
+let geminiClient: GoogleGenAI | null = null;
 
-function getGeminiModel() {
-  if (geminiModel) return geminiModel;
+function getGeminiClient(): GoogleGenAI | null {
+  if (geminiClient) return geminiClient;
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
-  const genAI = new GoogleGenerativeAI(key);
-  geminiModel = genAI.getGenerativeModel({
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
-  });
-  return geminiModel;
+  geminiClient = new GoogleGenAI({ apiKey: key });
+  return geminiClient;
+}
+
+function getGeminiModel(): string {
+  return process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
 }
 
 // --- z-ai SDK (sandbox fallback) ---
@@ -38,40 +36,68 @@ async function getZAI(): Promise<ZAI> {
 }
 
 /**
+ * Check if the z-ai SDK is available (sandbox only).
+ */
+async function isSandboxAIAvailable(): Promise<boolean> {
+  try {
+    await getZAI();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Clear error thrown when no AI provider is available. */
+function noAIProviderError(): Error {
+  return new Error(
+    "AI features require a Gemini API key. Set GEMINI_API_KEY in your " +
+    "environment variables (Vercel → Settings → Environment Variables). " +
+    "Get a free key at https://aistudio.google.com/app/apikey"
+  );
+}
+
+/**
  * Run a single completion turn and return the raw text content.
- * The "assistant" role carries the system prompt per the z-ai SDK convention;
- * Gemini receives it as the first user-turn message.
  */
 export async function aiComplete(
   systemPrompt: string,
   userPrompt: string
 ): Promise<string> {
   // Prefer Gemini in production.
-  const model = getGeminiModel();
-  if (model) {
+  const client = getGeminiClient();
+  if (client) {
     try {
-      const result = await model.generateContent(
-        `${systemPrompt}\n\n${userPrompt}`
-      );
-      const text = result.response.text();
+      const response = await client.models.generateContent({
+        model: getGeminiModel(),
+        contents: `${systemPrompt}\n\n${userPrompt}`,
+      });
+      const text = response.text;
       if (text && text.trim()) return text.trim();
     } catch (err) {
-      console.error("Gemini completion failed, falling back:", err);
-      // fall through to z-ai SDK if Gemini errors
+      console.error("Gemini completion failed:", err);
+      throw new Error(
+        "Gemini API error: " +
+        (err instanceof Error ? err.message : "Unknown error") +
+        `. Check GEMINI_API_KEY and GEMINI_MODEL (${getGeminiModel()}) env vars.`
+      );
     }
   }
 
   // Sandbox fallback (z-ai-web-dev-sdk).
-  const zai = await getZAI();
-  const completion = await zai.chat.completions.create({
-    messages: [
-      { role: "assistant", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    thinking: { type: "disabled" },
-  });
-  const content = completion.choices?.[0]?.message?.content ?? "";
-  return content.trim();
+  if (await isSandboxAIAvailable()) {
+    const zai = await getZAI();
+    const completion = await zai.chat.completions.create({
+      messages: [
+        { role: "assistant", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      thinking: { type: "disabled" },
+    });
+    const content = completion.choices?.[0]?.message?.content ?? "";
+    return content.trim();
+  }
+
+  throw noAIProviderError();
 }
 
 /**
@@ -81,7 +107,6 @@ export async function aiComplete(
 export function extractJSON<T = unknown>(raw: string): T {
   if (!raw) throw new Error("Empty AI response");
 
-  // Strip markdown code fences if present.
   const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const candidate = fenceMatch ? fenceMatch[1] : raw;
 
@@ -91,7 +116,6 @@ export function extractJSON<T = unknown>(raw: string): T {
     // Fall through to bracket scanning.
   }
 
-  // Try to locate the first JSON array or object.
   const arrayStart = candidate.indexOf("[");
   const objStart = candidate.indexOf("{");
   let start = -1;
@@ -113,4 +137,67 @@ export function extractJSON<T = unknown>(raw: string): T {
 
   const slice = candidate.slice(start, end + 1);
   return JSON.parse(slice) as T;
+}
+
+/**
+ * Analyze a meal photo with AI vision and return structured nutrition data.
+ *
+ * Uses Gemini Vision (inline image part) when GEMINI_API_KEY is set,
+ * otherwise falls back to the z-ai-web-dev-sdk vision endpoint (sandbox).
+ */
+export async function aiAnalyzeImage(
+  imageBase64: string,
+  mimeType: string,
+  prompt: string
+): Promise<string> {
+  // --- Gemini Vision (production) ---
+  const client = getGeminiClient();
+  if (client) {
+    try {
+      const response = await client.models.generateContent({
+        model: getGeminiModel(),
+        contents: [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType,
+              data: imageBase64,
+            },
+          },
+        ],
+      });
+      const text = response.text;
+      if (text && text.trim()) return text.trim();
+    } catch (err) {
+      console.error("Gemini Vision failed:", err);
+      throw new Error(
+        "Gemini Vision error: " +
+        (err instanceof Error ? err.message : "Unknown error") +
+        `. Check GEMINI_API_KEY env var.`
+      );
+    }
+  }
+
+  // --- z-ai SDK vision fallback (sandbox only) ---
+  if (await isSandboxAIAvailable()) {
+    const zai = await getZAI();
+    const dataUrl = `data:${mimeType};base64,${imageBase64}`;
+    const completion = await zai.chat.completions.createVision({
+      model: "glm-4.6v",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            { type: "image_url", image_url: { url: dataUrl } },
+          ],
+        },
+      ],
+      thinking: { type: "disabled" },
+    });
+    const content = completion.choices?.[0]?.message?.content ?? "";
+    return content.trim();
+  }
+
+  throw noAIProviderError();
 }

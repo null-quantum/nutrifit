@@ -15,13 +15,54 @@ import {
   Save,
   Info,
   AlertCircle,
+  Bell,
+  Droplet,
+  Utensils,
+  Dumbbell,
+  CheckCircle2,
 } from "lucide-react";
+import {
+  getReminderPrefs,
+  saveReminderPrefs,
+  getPermission,
+  requestPermission,
+  type ReminderPrefs,
+} from "@/lib/notifications";
+import { useToast } from "@/hooks/use-toast";
 
 export default function UserSettingsTab() {
   const { user, updateProfile } = useAuthStore();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<"" | "success" | "error">("");
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Reminder preferences + notification permission
+  const [prefs, setPrefs] = useState<ReminderPrefs>(() => getReminderPrefs());
+  const [perm, setPerm] = useState<NotificationPermission>(() => getPermission());
+
+  function updatePrefs(patch: Partial<ReminderPrefs>) {
+    const next = { ...prefs, ...patch };
+    setPrefs(next);
+    saveReminderPrefs(next);
+  }
+
+  async function handleEnableReminders() {
+    if (perm !== "granted") {
+      const result = await requestPermission();
+      setPerm(result);
+      if (result !== "granted") {
+        toast({
+          title: "Notifications blocked",
+          description: "Enable notifications in your browser settings to receive reminders.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    updatePrefs({ enabled: true });
+    toast({ title: "Reminders enabled! 🔔", description: "You'll get water, meal, and workout notifications." });
+  }
 
   // Populate local form states with live fallback user values
   const [name, setName] = useState(user?.name || "");
@@ -290,6 +331,152 @@ export default function UserSettingsTab() {
           </motion.button>
         </form>
       </motion.div>
+
+      {/* REMINDERS SECTION */}
+      <motion.div
+        variants={riseItem}
+        className="nf-premium rounded-3xl p-8 space-y-6"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-teal-500 text-white rounded-xl shadow-lg shadow-cyan-500/20">
+            <Bell size={20} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">
+              Smart Reminders
+            </h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+              Water · Meals · Workout notifications
+            </p>
+          </div>
+        </div>
+
+        {!prefs.enabled ? (
+          <div className="text-center py-6 space-y-4">
+            <p className="text-sm font-semibold text-slate-500">
+              Get gentle reminders to stay hydrated, eat on time, and hit your workouts.
+            </p>
+            <motion.button
+              onClick={handleEnableReminders}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="nf-btn-gradient nf-shimmer px-6 py-3 rounded-xl font-black text-sm uppercase tracking-wider inline-flex items-center gap-2"
+            >
+              <Bell size={16} /> Enable Reminders
+            </motion.button>
+            {perm === "denied" && (
+              <p className="text-xs text-rose-500 font-bold">
+                Notifications are blocked — enable them in your browser settings.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Master toggle */}
+            <div className="flex items-center justify-between p-4 bg-slate-50/80 rounded-2xl border border-slate-200/60">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 size={18} className="text-emerald-500" />
+                <span className="font-bold text-slate-700 text-sm">Reminders Active</span>
+              </div>
+              <button
+                onClick={() => updatePrefs({ enabled: false })}
+                className="text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors"
+              >
+                Disable
+              </button>
+            </div>
+
+            {/* Water */}
+            <ReminderToggle
+              icon={<Droplet size={16} />}
+              label="Hydration"
+              description="Every 2 hours, 9am–9pm"
+              enabled={prefs.water}
+              onToggle={() => updatePrefs({ water: !prefs.water })}
+              tint="text-sky-500 bg-sky-50"
+            />
+
+            {/* Meals */}
+            <ReminderToggle
+              icon={<Utensils size={16} />}
+              label="Meal Times"
+              description="Breakfast 8am · Lunch 12pm · Dinner 7pm"
+              enabled={prefs.meals}
+              onToggle={() => updatePrefs({ meals: !prefs.meals })}
+              tint="text-amber-500 bg-amber-50"
+            />
+
+            {/* Workout */}
+            <div className="flex items-center justify-between p-4 bg-white/60 rounded-2xl border border-slate-200/60">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${prefs.workout ? "text-emerald-500 bg-emerald-50" : "text-slate-300 bg-slate-50"}`}>
+                  <Dumbbell size={16} />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-700 text-sm">Workout</p>
+                  <p className="text-xs text-slate-400 font-semibold">Daily at your chosen time</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="time"
+                  value={prefs.workoutTime}
+                  onChange={(e) => updatePrefs({ workoutTime: e.target.value })}
+                  className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/40"
+                />
+                <ToggleSwitch
+                  on={prefs.workout}
+                  onClick={() => updatePrefs({ workout: !prefs.workout })}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </motion.div>
     </motion.div>
+  );
+}
+
+function ReminderToggle({
+  icon,
+  label,
+  description,
+  enabled,
+  onToggle,
+  tint,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  enabled: boolean;
+  onToggle: () => void;
+  tint: string;
+}) {
+  return (
+    <div className="flex items-center justify-between p-4 bg-white/60 rounded-2xl border border-slate-200/60">
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${enabled ? tint : "text-slate-300 bg-slate-50"}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="font-bold text-slate-700 text-sm">{label}</p>
+          <p className="text-xs text-slate-400 font-semibold">{description}</p>
+        </div>
+      </div>
+      <ToggleSwitch on={enabled} onClick={onToggle} />
+    </div>
+  );
+}
+
+function ToggleSwitch({ on, onClick }: { on: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative w-11 h-6 rounded-full transition-colors ${on ? "bg-emerald-500" : "bg-slate-300"}`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 size-5 bg-white rounded-full shadow-sm transition-transform ${on ? "translate-x-5" : ""}`}
+      />
+    </button>
   );
 }

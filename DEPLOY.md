@@ -62,24 +62,20 @@ Pick **one** of these (all have free tiers):
 
 ---
 
-## Step 3 — Switch Prisma from SQLite to PostgreSQL
+## Step 3 — Tell the app to use PostgreSQL (no code edits needed)
 
-Edit `prisma/schema.prisma` — change **one line**:
+The repo ships with **two Prisma schemas**: `schema.sqlite.prisma` (local dev)
+and `schema.postgres.prisma` (production). A build script
+(`scripts/select-schema.js`) auto-selects the right one based on the
+`DATABASE_PROVIDER` env var — so **you don't edit any schema files**.
 
-```prisma
-datasource db {
-  provider = "postgresql"   // was "sqlite"
-  url      = env("DATABASE_URL")
-}
-```
+When you set `DATABASE_PROVIDER=postgresql` in Vercel (Step 4), the
+`postinstall` + `build` scripts automatically swap in the Postgres schema and
+generate the right Prisma Client. All the query code in `src/lib/` stays
+identical between providers.
 
-That's it — all the Prisma queries in `src/lib/` stay identical. Commit + push:
-
-```bash
-git add prisma/schema.prisma
-git commit -m "Switch Prisma datasource to PostgreSQL for Vercel"
-git push
-```
+> Local dev keeps using SQLite (the sandbox can't reach external Postgres).
+> Nothing changes for local development — just set `DATABASE_PROVIDER` on Vercel.
 
 ---
 
@@ -92,13 +88,15 @@ git push
 
    | Key | Value |
    |---|---|
+   | `DATABASE_PROVIDER` | `postgresql` ← **this triggers the auto schema swap** |
    | `DATABASE_URL` | _your Postgres connection string from Step 2_ |
    | `JWT_SECRET` | _a long random string_ (run `openssl rand -hex 32` in terminal) |
    | `GEMINI_API_KEY` | _your Gemini API key_ (get one free at https://aistudio.google.com/app/apikey) |
    | `GEMINI_MODEL` | `gemini-2.5-flash` |
 
-5. Click **Deploy**. Vercel runs `npm install` (which triggers the
-   `postinstall: prisma generate` script) then `next build`.
+5. Click **Deploy**. Vercel runs `npm install` (which triggers
+   `postinstall` → `select-schema.js` picks the Postgres schema →
+   `prisma generate`) then `build` (same schema selection + `next build`).
 
 > **First deploy will fail** if the database tables don't exist yet — that's
 > expected. Fix it in Step 5.
@@ -112,20 +110,24 @@ tables. Do that with **one** of these:
 
 ### From your local machine (quickest)
 ```bash
-# Set your prod DATABASE_URL locally temporarily:
+# Temporarily point your local env at the production Postgres DB:
+export DATABASE_PROVIDER="postgresql"
 export DATABASE_URL="postgresql://...your-vercel-postgres-string..."
 bun run db:push
 ```
-This creates all tables in your hosted Postgres. Done.
+This swaps in the Postgres schema (via `select-schema.js`), creates all tables
+in your hosted Postgres, then you can `unset DATABASE_PROVIDER DATABASE_URL`
+to return to local SQLite dev. Done.
 
 ### Or: add a Vercel build command (one-time)
 In Vercel → Project → Settings → Build & Development Settings → override the
 Build Command to:
 ```
-prisma db push && next build
+node scripts/select-schema.js && prisma db push && next build
 ```
-Deploy once, then set it back to `next build` (so it doesn't try to push on
-every deploy).
+Deploy once (it creates the tables), then set it back to the default
+(`node scripts/select-schema.js && prisma generate && next build`) so it
+doesn't try to push on every deploy.
 
 ---
 
@@ -169,6 +171,7 @@ every deploy).
 
 | Variable | Required | Purpose |
 |---|---|---|
+| `DATABASE_PROVIDER` | ✅ | `sqlite` (local dev) or `postgresql` (Vercel) — triggers schema auto-select |
 | `DATABASE_URL` | ✅ | Postgres connection string (prod) or SQLite path (dev) |
 | `JWT_SECRET` | ✅ | Signs the auth JWT — use a long random string |
 | `GEMINI_API_KEY` | ✅ (prod) | Google Gemini API key for AI features |

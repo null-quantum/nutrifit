@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { SyncStatus } from "./SyncStatus";
 
 type NavItem = {
   id: string;
@@ -124,13 +125,14 @@ export default function Sidebar({
         })}
       </nav>
 
-      {/* AI status pill */}
+      {/* Sync status + AI status */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
-        className="mb-3 px-3"
+        className="mb-3 px-1 space-y-2"
       >
+        <SyncStatus />
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/50 border border-emerald-200/40 backdrop-blur-md text-xs font-bold text-emerald-700">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
