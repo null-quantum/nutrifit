@@ -22,7 +22,7 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 function getGeminiModel(): string {
-  return process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+  return process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
 }
 
 // --- z-ai SDK (sandbox fallback) ---
