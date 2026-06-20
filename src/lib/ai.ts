@@ -16,13 +16,20 @@ let geminiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI | null {
   if (geminiClient) return geminiClient;
   const key = process.env.GEMINI_API_KEY;
-  if (!key) return null;
-  geminiClient = new GoogleGenAI({ apiKey: key });
+  if (!key) {
+    console.error("[AI] GEMINI_API_KEY is not set in environment variables.");
+    return null;
+  }
+  // Log key prefix for debugging (never log the full key).
+  console.log("[AI] Initializing Gemini with key prefix:", key.slice(0, 8) + "...");
+  geminiClient = new GoogleGenAI({ apiKey: key.trim() });
   return geminiClient;
 }
 
 function getGeminiModel(): string {
-  return process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
+  const model = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
+  console.log("[AI] Using model:", model);
+  return model;
 }
 
 // --- z-ai SDK (sandbox fallback) ---
