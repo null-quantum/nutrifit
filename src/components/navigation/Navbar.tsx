@@ -92,6 +92,13 @@ const Navbar = () => {
             <div className="hidden md:flex items-center gap-6">
               <button
                 type="button"
+                onClick={() => setView("dashboard")}
+                className="text-sm font-medium text-slate-300 hover:text-white transition-colors cursor-pointer"
+              >
+                Dashboard
+              </button>
+              <button
+                type="button"
                 onClick={() => setView("auth")}
                 className="text-sm font-medium text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
@@ -172,6 +179,16 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setView("dashboard");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full px-5 py-3 rounded-lg text-sm font-bold text-slate-300 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer"
+                >
+                  Dashboard
+                </button>
                 <button
                   type="button"
                   onClick={() => {

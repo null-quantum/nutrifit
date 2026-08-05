@@ -27,7 +27,9 @@ function resolveView(
   onboardingDone: boolean,
   requested: AppView
 ): AppView {
+  // Allow logged-out visitors to view the dashboard (portfolio demo)
   if (!isAuthenticated) {
+    if (requested === "dashboard") return "dashboard";
     return requested === "auth" ? "auth" : "landing";
   }
   if (!onboardingDone) {
