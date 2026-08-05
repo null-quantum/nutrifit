@@ -10,10 +10,12 @@ import AboutSection from "@/components/landing/AboutSection";
 import ContactSection from "@/components/landing/ContactSection";
 import CallToActionSection from "@/components/landing/CallToActionSection";
 import Footer from "@/components/landing/Footer";
+import { ScrollProgressBar } from "@/components/shared/animations";
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-700">
+      <ScrollProgressBar />
       <Navbar />
 
       <HeroSection />

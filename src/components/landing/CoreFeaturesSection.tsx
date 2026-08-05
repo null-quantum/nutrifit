@@ -1,7 +1,14 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { motion, type Variants } from "framer-motion";
+import {
+  StaggerContainer,
+  StaggerItem,
+  TextReveal,
+  MagneticCard,
+  GradientText,
+  ShimmerLine,
+} from "@/components/shared/animations";
 
 const CoreFeaturesSection = () => {
   const coreFeatures = [
@@ -73,97 +80,87 @@ const CoreFeaturesSection = () => {
     },
   ];
 
-  // Framer Motion variants for the staggered roll-in effect
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15 },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 40 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: { type: "spring", stiffness: 50, damping: 15 },
-    },
-  };
-
   return (
     <section className="py-32 bg-slate-50 flex items-center justify-center overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full">
         <div className="mb-16">
           <h2 className="text-emerald-600 font-bold tracking-wider uppercase text-sm mb-2">
-            Core Features
+            <TextReveal text="Core Features" mode="block" delay={0.05} />
           </h2>
           <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900">
-            What Our AI Can Analyze
+            <TextReveal
+              text="What Our AI Can Analyze"
+              mode="words"
+              delay={0.15}
+              stagger={0.07}
+            />
           </h3>
+          <div className="mt-6 max-w-xs">
+            <ShimmerLine />
+          </div>
         </div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-100px" }}
+        <StaggerContainer
+          stagger={0.12}
+          delayChildren={0.1}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16"
         >
           {coreFeatures.map((feature) => (
-            <motion.div
-              variants={itemVariants}
-              key={feature.id}
-              className="group relative w-full h-[400px] rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 cursor-pointer transform-gpu transition-[transform,box-shadow] duration-500 ease-out hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] will-change-transform"
-            >
-              <div className="absolute inset-0 z-0">
-                <img
-                  src={feature.image}
-                  alt={feature.title}
-                  className="w-full h-full object-cover object-center transform-gpu transition-transform duration-700 ease-out group-hover:scale-[1.05] will-change-transform"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/40 to-transparent opacity-80" />
-              </div>
+            <StaggerItem key={feature.id} direction="up" distance={40}>
+              <MagneticCard
+                strength={6}
+                lift={10}
+                className="group relative w-full h-[400px] rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 cursor-pointer transition-shadow duration-500 ease-out hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] will-change-transform"
+              >
+                <div className="absolute inset-0 z-0">
+                  <img
+                    src={feature.image}
+                    alt={feature.title}
+                    className="w-full h-full object-cover object-center transform-gpu transition-transform duration-700 ease-out group-hover:scale-[1.05] will-change-transform"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/40 to-transparent opacity-80" />
+                </div>
 
-              <div className="absolute bottom-6 left-6 z-10 transition-opacity duration-300 group-hover:opacity-0 pr-6">
-                <h4 className="text-2xl font-bold text-white drop-shadow-lg">
-                  {feature.title}
-                </h4>
-              </div>
-
-              <div className="absolute inset-0 bg-[#0B1120]/90 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 p-8 flex flex-col justify-center will-change-opacity">
-                <div className="transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 ease-out will-change-transform">
-                  <h4
-                    className={`text-2xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r ${feature.titleGradient}`}
-                  >
+                <div className="absolute bottom-6 left-6 z-10 transition-opacity duration-300 group-hover:opacity-0 pr-6">
+                  <h4 className="text-2xl font-bold text-white drop-shadow-lg">
                     {feature.title}
                   </h4>
+                </div>
 
-                  <p
-                    className={`text-sm leading-relaxed mb-6 font-medium ${feature.paragraphTint}`}
-                  >
-                    {feature.description}
-                  </p>
+                <div className="absolute inset-0 bg-[#0B1120]/90 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 p-8 flex flex-col justify-center will-change-opacity">
+                  <div className="transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 ease-out will-change-transform">
+                    <h4
+                      className={`text-2xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r ${feature.titleGradient}`}
+                    >
+                      {feature.title}
+                    </h4>
 
-                  <div className="space-y-3 mb-8">
-                    {feature.bullets.map((bullet, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex items-center gap-3 text-sm font-medium ${feature.paragraphTint}`}
-                      >
-                        <Check
-                          className={`w-4 h-4 ${feature.checkmarkColor}`}
-                          strokeWidth={3}
-                        />
-                        {bullet}
-                      </div>
-                    ))}
+                    <p
+                      className={`text-sm leading-relaxed mb-6 font-medium ${feature.paragraphTint}`}
+                    >
+                      {feature.description}
+                    </p>
+
+                    <div className="space-y-3 mb-8">
+                      {feature.bullets.map((bullet, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex items-center gap-3 text-sm font-medium ${feature.paragraphTint}`}
+                        >
+                          <Check
+                            className={`w-4 h-4 ${feature.checkmarkColor}`}
+                            strokeWidth={3}
+                          />
+                          {bullet}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </MagneticCard>
+            </StaggerItem>
           ))}
-        </motion.div>
+        </StaggerContainer>
       </div>
     </section>
   );

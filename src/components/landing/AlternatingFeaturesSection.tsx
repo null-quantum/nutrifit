@@ -1,6 +1,15 @@
 "use client";
 
 import { ArrowDown } from "lucide-react";
+import {
+  ScrollReveal,
+  StaggerContainer,
+  StaggerItem,
+  TextReveal,
+  ParallaxLayer,
+  Floating,
+  ShimmerLine,
+} from "@/components/shared/animations";
 
 const AlternatingFeaturesSection = () => {
   return (
@@ -11,67 +20,102 @@ const AlternatingFeaturesSection = () => {
           <div className="space-y-8 relative z-10">
             <div>
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                How NutriFit Works
+                <TextReveal
+                  text="How NutriFit Works"
+                  mode="words"
+                  delay={0.05}
+                  stagger={0.07}
+                />
               </h2>
-              <p className="mt-4 text-base md:text-lg text-slate-600 font-medium max-w-md">
-                From raw biometric data to a fully actionable daily plan in
-                seconds.
-              </p>
+              <ScrollReveal direction="up" distance={24} delay={0.3}>
+                <p className="mt-4 text-base md:text-lg text-slate-600 font-medium max-w-md">
+                  From raw biometric data to a fully actionable daily plan in
+                  seconds.
+                </p>
+              </ScrollReveal>
             </div>
 
-            <div className="space-y-4 max-w-sm">
+            <StaggerContainer
+              stagger={0.12}
+              delayChildren={0.4}
+              className="space-y-4 max-w-sm"
+            >
               {/* Step 1 */}
-              <div className="flex items-center gap-5 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md hover:border-cyan-200">
-                <div className="w-12 h-12 shrink-0 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-center font-black text-lg">
-                  1
+              <StaggerItem direction="left" distance={40}>
+                <div className="flex items-center gap-5 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md hover:border-cyan-200">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-cyan-50 text-cyan-600 flex items-center justify-center font-black text-lg">
+                    1
+                  </div>
+                  <p className="font-bold text-slate-800">Input Biometrics</p>
                 </div>
-                <p className="font-bold text-slate-800">Input Biometrics</p>
-              </div>
+              </StaggerItem>
 
-              <ArrowDown className="w-6 h-6 text-slate-300 mx-auto" />
+              <ScrollReveal direction="fade" distance={0} delay={0.5}>
+                <ArrowDown className="w-6 h-6 text-slate-300 mx-auto" />
+              </ScrollReveal>
 
               {/* Step 2 */}
-              <div className="flex items-center gap-5 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md hover:border-teal-200">
-                <div className="w-12 h-12 shrink-0 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center font-black text-lg">
-                  2
+              <StaggerItem direction="left" distance={40}>
+                <div className="flex items-center gap-5 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md hover:border-teal-200">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center font-black text-lg">
+                    2
+                  </div>
+                  <p className="font-bold text-slate-800">AI Analysis</p>
                 </div>
-                <p className="font-bold text-slate-800">AI Analysis</p>
-              </div>
+              </StaggerItem>
 
-              <ArrowDown className="w-6 h-6 text-slate-300 mx-auto" />
+              <ScrollReveal direction="fade" distance={0} delay={0.6}>
+                <ArrowDown className="w-6 h-6 text-slate-300 mx-auto" />
+              </ScrollReveal>
 
               {/* Step 3 */}
-              <div className="flex items-center gap-5 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md hover:border-emerald-200">
-                <div className="w-12 h-12 shrink-0 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-lg">
-                  3
+              <StaggerItem direction="left" distance={40}>
+                <div className="flex items-center gap-5 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md hover:border-emerald-200">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-lg">
+                    3
+                  </div>
+                  <p className="font-bold text-slate-800">Nutrition Profile</p>
                 </div>
-                <p className="font-bold text-slate-800">Nutrition Profile</p>
-              </div>
+              </StaggerItem>
 
-              <ArrowDown className="w-6 h-6 text-slate-300 mx-auto" />
+              <ScrollReveal direction="fade" distance={0} delay={0.7}>
+                <ArrowDown className="w-6 h-6 text-slate-300 mx-auto" />
+              </ScrollReveal>
 
               {/* Step 4 */}
-              <div className="flex items-center gap-5 bg-gradient-to-r from-cyan-500 to-teal-400 p-4 rounded-2xl shadow-lg shadow-cyan-500/20 transform hover:-translate-y-1 transition-all">
-                <div className="w-12 h-12 shrink-0 rounded-full bg-white text-cyan-600 flex items-center justify-center font-black text-lg shadow-sm">
-                  4
+              <StaggerItem direction="left" distance={40}>
+                <div className="flex items-center gap-5 bg-gradient-to-r from-cyan-500 to-teal-400 p-4 rounded-2xl shadow-lg shadow-cyan-500/20 transform hover:-translate-y-1 transition-all">
+                  <div className="w-12 h-12 shrink-0 rounded-full bg-white text-cyan-600 flex items-center justify-center font-black text-lg shadow-sm">
+                    4
+                  </div>
+                  <p className="font-bold text-white text-lg tracking-wide">
+                    Personalized Plan
+                  </p>
                 </div>
-                <p className="font-bold text-white text-lg tracking-wide">
-                  Personalized Plan
-                </p>
-              </div>
-            </div>
+              </StaggerItem>
+            </StaggerContainer>
           </div>
 
           {/* Right Side: The Vitamin Image */}
           <div className="relative flex justify-center items-center">
             {/* Decorative background shape */}
-            <div className="absolute w-[85%] h-[85%] bg-cyan-100/50 rounded-full blur-3xl z-0"></div>
-
-            <img
-              src="/assets/vitamin-capsule.png"
-              alt="Vitamins and Nutrition"
-              className="relative z-10 w-full max-w-[500px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+            <Floating
+              distance={20}
+              duration={9}
+              className="absolute w-[85%] h-[85%] bg-cyan-100/50 rounded-full blur-3xl z-0"
             />
+
+            <ParallaxLayer speed={0.35} className="relative z-10 flex justify-center">
+              <img
+                src="/assets/vitamin-capsule.png"
+                alt="Vitamins and Nutrition"
+                className="w-full max-w-[500px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+              />
+            </ParallaxLayer>
+
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32">
+              <ShimmerLine />
+            </div>
           </div>
         </div>
       </div>

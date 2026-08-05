@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
 import { AnimatedNumber } from "./AnimatedNumber";
 import { staggerContainer, riseItem } from "./motion";
+import { MagneticCard, ScrollReveal, StaggerContainer, StaggerItem, ShimmerLine, EASE } from "@/components/shared/animations";
 import {
   Flame,
   Sparkles,
@@ -372,6 +373,8 @@ export default function OverviewTab() {
         </motion.div>
       </motion.div>
 
+      <ShimmerLine className="my-2" />
+
       {/* ROW 2: Contextual Metrics (Ring + Macros + Insight) */}
       <motion.div
         variants={staggerContainer}
@@ -539,8 +542,10 @@ export default function OverviewTab() {
         </motion.div>
       </motion.div>
 
+      <ShimmerLine className="my-2" />
+
       {/* ROW 3: Smart Daily Logger */}
-      <motion.div variants={riseItem} className="pt-8 border-t border-slate-200/60">
+      <ScrollReveal direction="up" distance={50} duration={0.8} className="pt-8 border-t border-slate-200/60">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-teal-500 text-white rounded-xl shadow-lg shadow-cyan-500/20">
             <Utensils size={20} />
@@ -803,7 +808,7 @@ export default function OverviewTab() {
             </div>
           </motion.div>
         </div>
-      </motion.div>
+      </ScrollReveal>
     </motion.div>
   );
 }
