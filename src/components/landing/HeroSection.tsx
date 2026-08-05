@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Activity, Shield, Zap, Target, Brain } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -9,76 +8,45 @@ import {
   StaggerContainer,
   StaggerItem,
   TextReveal,
-  ParallaxLayer,
   MagneticCard,
   Floating,
-  GradientText,
   EASE,
 } from "@/components/shared/animations";
 
 const HeroSection = () => {
   const setView = useAuthStore((s) => s.setView);
-  // Setup state to track mouse position for parallax
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Calculate distance from center of screen, multiply by 0.02 for a subtle parallax effect
-    const x = (e.clientX - window.innerWidth / 2) * 0.02;
-    const y = (e.clientY - window.innerHeight / 2) * 0.02;
-    setMousePos({ x, y });
-  };
 
   return (
-    <section
-      onMouseMove={handleMouseMove}
-      className="relative min-h-screen w-full flex items-center overflow-hidden bg-[#0B1120] pt-20"
-    >
-      {/* Parallax Wrapper - Moves smoothly opposite to the mouse */}
-      <motion.div
-        className="absolute inset-0 z-0 pointer-events-none"
-        animate={{ x: mousePos.x, y: mousePos.y }}
-        transition={{ type: "spring", stiffness: 50, damping: 20 }}
-      >
-        {/* The Apple Image - Floating + Glowing + Scroll Parallax */}
-        <ParallaxLayer speed={0.4} className="absolute inset-0">
-          <Floating distance={20} duration={6}>
-            <motion.img
-              src="/assets/backgrounds/Green-Apple.png"
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: 1,
-                filter: [
-                  "drop-shadow(0 0 10px rgba(0, 255, 209, 0.1))",
-                  "drop-shadow(0 0 40px rgba(0, 255, 209, 0.4))",
-                  "drop-shadow(0 0 10px rgba(0, 255, 209, 0.1))",
-                ],
-              }}
-              transition={{
-                opacity: { duration: 1.5 },
-                filter: { duration: 4, repeat: Infinity, ease: "easeInOut" },
-              }}
-              className="absolute inset-0 w-full h-full object-cover object-left lg:object-[20%_center]"
-              alt="NutriFit Green Apple"
-            />
-          </Floating>
-        </ParallaxLayer>
-      </motion.div>
+    <section className="relative min-h-screen w-full flex items-center overflow-hidden bg-[#0B1120] pt-20">
+      {/* Hero background image — fills the full screen, apple on the left */}
+      <motion.img
+        src="/assets/hero-apple.png"
+        alt="NutriFit AI Health Platform"
+        initial={{ opacity: 0, scale: 1.05 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, ease: EASE.out }}
+        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+      />
 
-      {/* Ambient Orbiting Particles placed behind the text for depth */}
-      <Floating distance={30} duration={8} className="absolute top-[20%] right-[30%] w-64 h-64 bg-[#00FFD1]/5 rounded-full blur-3xl pointer-events-none z-0" />
+      {/* Floating glow behind the apple — adds depth */}
+      <Floating
+        distance={20}
+        duration={6}
+        className="absolute top-[30%] left-[15%] w-72 h-72 bg-[#00FFD1]/8 rounded-full blur-3xl pointer-events-none z-0"
+      />
 
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#0B1120]/60 to-[#0B1120]/95 z-0 pointer-events-none" />
+      {/* Gradient overlay — left transparent (shows apple), right dark (for text) */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120]/30 via-[#0B1120]/70 to-[#0B1120] z-[1] pointer-events-none" />
 
-      {/* MAIN CONTENT CONTAINER */}
+      {/* MAIN CONTENT — right side */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 flex justify-end">
-        {/* Text Reveal */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, ease: EASE.out, delay: 0.2 }}
           className="w-full lg:w-[55%] flex flex-col justify-center"
         >
-          <h1 className="font-montserrat text-6xl md:text-[5rem] font-extrabold leading-[1.05] tracking-tight mb-6 hero-text-glow">
+          <h1 className="font-montserrat text-5xl md:text-6xl lg:text-[5rem] font-extrabold leading-[1.05] tracking-tight mb-6 hero-text-glow">
             <TextReveal
               text="Advancing Nutrition,"
               mode="words"
@@ -97,7 +65,7 @@ const HeroSection = () => {
           </h1>
 
           <ScrollReveal direction="up" distance={30} delay={1.2} duration={0.8}>
-            <p className="text-[1.2rem] text-white/85 leading-[1.8] max-w-[650px] mb-10 font-medium">
+            <p className="text-base md:text-lg text-white/85 leading-[1.8] max-w-[600px] mb-10 font-medium">
               Modern medical science and AI are redefining the future of
               nutrition. Through personalized health insights, advanced
               nutritional analysis, and evidence-based recommendations,
@@ -134,7 +102,7 @@ const HeroSection = () => {
           <StaggerContainer
             stagger={0.1}
             delayChildren={2}
-            className="grid grid-cols-5 gap-3 w-full max-w-[650px]"
+            className="grid grid-cols-5 gap-3 w-full max-w-[600px]"
           >
             {[
               { icon: Brain, label: "AI Core" },
@@ -147,7 +115,7 @@ const HeroSection = () => {
                 <MagneticCard
                   strength={10}
                   lift={6}
-                  className="h-full flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-colors"
+                  className="h-full flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
                 >
                   <feature.icon className="w-6 h-6 text-[#00FFD1] mb-2" />
                   <span className="text-xs font-bold text-white/80">
