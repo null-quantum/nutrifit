@@ -6,6 +6,7 @@ import { RegisterSW } from "@/components/pwa/RegisterSW";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { NotificationManager } from "@/components/pwa/NotificationManager";
+import { ThemeProvider } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -86,12 +87,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <RegisterSW />
-        <OfflineBanner />
-        <InstallPrompt />
-        <NotificationManager />
-        {children}
-        <Toaster />
+        <ThemeProvider>
+          <RegisterSW />
+          <OfflineBanner />
+          <InstallPrompt />
+          <NotificationManager />
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

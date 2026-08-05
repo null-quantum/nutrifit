@@ -40,7 +40,7 @@ export default function Sidebar({
   const logout = useAuthStore((s) => s.logout);
 
   return (
-    <aside className="hidden lg:flex w-72 h-screen fixed left-0 top-0 flex-col z-50 p-5 nf-premium rounded-none border-r border-white/40 bg-gradient-to-b from-white/80 via-white/55 to-white/40">
+    <aside className="hidden lg:flex w-72 h-screen fixed left-0 top-0 flex-col z-50 p-5 nf-premium rounded-none border-r border-slate-200/60" style={{ background: "var(--nf-sidebar-bg)" }}>
       {/* Brand */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
@@ -48,7 +48,7 @@ export default function Sidebar({
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="mb-8 px-2 flex items-center gap-2.5"
       >
-        <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center shadow-lg shadow-teal-500/20 overflow-hidden">
+        <div className="relative w-9 h-9 rounded-xl flex items-center justify-center shadow-lg overflow-hidden" style={{ background: "var(--nf-gradient)" }}>
           <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]" />
           <Sparkles size={16} className="text-white relative z-10" strokeWidth={2.5} />
           <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-cyan-400/40 to-emerald-400/30 blur-md -z-10" />
@@ -89,7 +89,12 @@ export default function Sidebar({
                 <motion.span
                   layoutId="activeNav"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-50/80 via-teal-50/60 to-emerald-50/40 border border-cyan-200/40 nf-ring-glow"
+                  className="absolute inset-0 rounded-xl border"
+                  style={{
+                    background: "color-mix(in srgb, var(--nf-accent) 8%, transparent)",
+                    borderColor: "color-mix(in srgb, var(--nf-accent) 25%, transparent)",
+                    boxShadow: `0 0 20px -4px var(--nf-glow)`,
+                  }}
                 />
               )}
 
@@ -98,18 +103,21 @@ export default function Sidebar({
                 <motion.span
                   layoutId="activeNavAccent"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-7 rounded-r-full bg-gradient-to-b from-cyan-400 to-emerald-400"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-7 rounded-r-full"
+                  style={{ background: "var(--nf-gradient)" }}
                 />
               )}
 
               <span
                 className={`relative z-10 flex items-center gap-3 ${
-                  isActive ? "text-cyan-700" : ""
+                  isActive ? "" : ""
                 }`}
+                style={isActive ? { color: "var(--nf-text-accent)" } : undefined}
               >
                 <Icon
                   size={20}
-                  className={isActive ? "text-cyan-600" : "text-slate-400"}
+                  className={isActive ? "" : "text-slate-400"}
+                  style={isActive ? { color: "var(--nf-accent)" } : undefined}
                 />
                 <span
                   className={

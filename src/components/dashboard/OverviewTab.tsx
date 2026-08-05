@@ -218,8 +218,8 @@ export default function OverviewTab() {
       <StaggerItem direction="up" distance={30}>
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 sm:p-8 text-white">
           {/* Ambient glow */}
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none" style={{ background: "var(--nf-glow)" }} />
+          <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full blur-3xl pointer-events-none opacity-50" style={{ background: "var(--nf-glow)" }} />
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div>
@@ -235,7 +235,7 @@ export default function OverviewTab() {
               <div className="flex items-center gap-3 mt-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black uppercase tracking-widest text-slate-400">Health Score</span>
-                  <span className="bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-lg text-sm font-black flex items-center gap-1.5">
+                  <span className="px-3 py-1 rounded-lg text-sm font-black flex items-center gap-1.5" style={{ background: "color-mix(in srgb, var(--nf-accent) 20%, transparent)", color: "var(--nf-accent)" }}>
                     <AnimatedNumber value={healthScore} />
                     <span className="text-xs text-emerald-400/80">{healthScore >= 70 ? "Optimal" : healthScore >= 40 ? "Good" : "Low"}</span>
                   </span>
@@ -246,7 +246,7 @@ export default function OverviewTab() {
             {/* Quick stats row */}
             <div className="flex gap-4">
               <div className="text-center">
-                <div className="text-2xl font-black text-cyan-400 nf-stat">
+                <div className="text-2xl font-black nf-stat" style={{ color: "var(--nf-accent)" }}>
                   <AnimatedNumber value={loggedData.calories} format={(n) => Math.round(n).toLocaleString()} />
                 </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">kcal eaten</div>
@@ -515,7 +515,8 @@ export default function OverviewTab() {
                 disabled={isAnalyzing || !mealInput.trim()}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-lg shadow-cyan-500/20 transition-all"
+                className="w-full py-3.5 rounded-xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 text-white transition-all"
+                style={{ background: "var(--nf-gradient)", boxShadow: `0 8px 24px -8px var(--nf-glow)` }}
               >
                 {isAnalyzing ? (
                   <><Loader2 className="size-4 animate-spin" /> Analyzing…</>

@@ -120,9 +120,9 @@ export function CalorieRing({
         >
           <defs>
             <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#06b6d4" />
-              <stop offset="50%" stopColor="#14b8a6" />
-              <stop offset="100%" stopColor="#10b981" />
+              <stop offset="0%" stopColor="var(--nf-ring-from, #06b6d4)" />
+              <stop offset="50%" stopColor="var(--nf-ring-via, #14b8a6)" />
+              <stop offset="100%" stopColor="var(--nf-ring-to, #10b981)" />
             </linearGradient>
           </defs>
           <PolarAngleAxis
@@ -334,8 +334,8 @@ export function WeeklyTrendChart({
         <AreaChart data={data} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+              <stop offset="0%" stopColor="var(--nf-accent, #06b6d4)" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="var(--nf-accent, #06b6d4)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <Tooltip
@@ -352,14 +352,14 @@ export function WeeklyTrendChart({
           <Area
             type="monotone"
             dataKey="calories"
-            stroke="#06b6d4"
+            stroke="var(--nf-accent, #06b6d4)"
             strokeWidth={2.5}
             fill="url(#trendGrad)"
             isAnimationActive
             animationDuration={1200}
             animationBegin={300}
-            dot={{ r: 3, fill: "#06b6d4", strokeWidth: 0 }}
-            activeDot={{ r: 5, fill: "#14b8a6", strokeWidth: 0 }}
+            dot={{ r: 3, fill: "var(--nf-accent, #06b6d4)", strokeWidth: 0 }}
+            activeDot={{ r: 5, fill: "var(--nf-accent-2, #14b8a6)", strokeWidth: 0 }}
           />
         </AreaChart>
       </ResponsiveContainer>

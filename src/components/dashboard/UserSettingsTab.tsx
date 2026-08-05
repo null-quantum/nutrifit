@@ -29,6 +29,7 @@ import {
   type ReminderPrefs,
 } from "@/lib/notifications";
 import { useToast } from "@/hooks/use-toast";
+import { ThemePicker } from "./ThemePicker";
 
 export default function UserSettingsTab() {
   const { user, updateProfile } = useAuthStore();
@@ -330,6 +331,14 @@ export default function UserSettingsTab() {
             )}
           </motion.button>
         </form>
+      </motion.div>
+
+      {/* THEME PICKER */}
+      <motion.div
+        variants={riseItem}
+        className="nf-premium rounded-3xl p-8 space-y-6"
+      >
+        <ThemePicker />
       </motion.div>
 
       {/* REMINDERS SECTION */}
