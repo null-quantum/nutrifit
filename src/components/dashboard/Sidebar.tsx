@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Sparkles,
+  Home,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { SyncStatus } from "./SyncStatus";
@@ -142,20 +143,27 @@ export default function Sidebar({
         </div>
       </motion.div>
 
-      {/* Logout */}
-      <motion.button
-        onClick={() => void logout()}
-        whileHover={{ x: 4 }}
-        whileTap={{ scale: 0.98 }}
-        className="group relative flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-400 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-50/40"
-      >
-        <span className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_24px_-4px_rgba(244,63,94,0.35)]" />
-        <LogOut
-          size={20}
-          className="relative z-10 transition-transform group-hover:scale-110"
-        />
-        <span className="relative z-10">Terminate Session</span>
-      </motion.button>
+      {/* Home + Logout */}
+      <div className="space-y-1.5">
+        <motion.button
+          onClick={() => useAuthStore.getState().setView("landing")}
+          whileHover={{ x: 4 }}
+          whileTap={{ scale: 0.98 }}
+          className="group relative w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:text-cyan-600 transition-colors rounded-xl hover:bg-cyan-50/40"
+        >
+          <Home size={20} className="relative z-10 transition-transform group-hover:scale-110" />
+          <span className="relative z-10">Home</span>
+        </motion.button>
+        <motion.button
+          onClick={() => void logout()}
+          whileHover={{ x: 4 }}
+          whileTap={{ scale: 0.98 }}
+          className="group relative w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-400 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-50/40"
+        >
+          <LogOut size={20} className="relative z-10 transition-transform group-hover:scale-110" />
+          <span className="relative z-10">Sign Out</span>
+        </motion.button>
+      </div>
     </aside>
   );
 }

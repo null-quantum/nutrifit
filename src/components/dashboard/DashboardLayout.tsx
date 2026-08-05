@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Sparkles,
+  Home,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import Sidebar from "./Sidebar";
@@ -80,12 +81,20 @@ export default function DashboardLayout({
               <span className="text-cyan-500">.</span>
             </h1>
           </div>
-          <button
-            onClick={() => void logout()}
-            className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-rose-50/60"
-          >
-            <LogOut size={14} /> Exit
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => useAuthStore.getState().setView("landing")}
+              className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-cyan-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-cyan-50/60"
+            >
+              <Home size={14} /> Home
+            </button>
+            <button
+              onClick={() => void logout()}
+              className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-rose-50/60"
+            >
+              <LogOut size={14} /> Exit
+            </button>
+          </div>
         </div>
         <div className="flex gap-1.5 px-3 pb-3 overflow-x-auto nf-scroll">
           {navItems.map((item) => {
