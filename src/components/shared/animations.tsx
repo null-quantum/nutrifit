@@ -335,6 +335,17 @@ type MagneticCardProps = {
   /** Lift on hover (px) */
   lift?: number;
   style?: CSSProperties;
+  /** Pass-through variants for parent stagger inheritance */
+  variants?: Variants;
+};
+
+const magneticVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: EASE.out },
+  },
 };
 
 export function MagneticCard({
@@ -343,6 +354,7 @@ export function MagneticCard({
   strength = 8,
   lift = 6,
   style,
+  variants,
 }: MagneticCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
@@ -378,6 +390,7 @@ export function MagneticCard({
         transformPerspective: 800,
         ...style,
       }}
+      variants={variants || magneticVariants}
       whileHover={{ y: -lift, transition: { duration: 0.3, ease: EASE.out } }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}

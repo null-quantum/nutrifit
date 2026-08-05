@@ -106,7 +106,7 @@ const AlternatingFeaturesSection = () => {
             />
 
             <ParallaxLayer speed={0.35} className="relative z-10 flex justify-center">
-              <img
+              <img loading="lazy"
                 src="/assets/vitamin-capsule.png"
                 alt="Vitamins and Nutrition"
                 className="w-full max-w-[500px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"

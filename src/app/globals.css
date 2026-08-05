@@ -180,9 +180,8 @@ html {
 .nf-blob {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(70px);
+  filter: blur(40px);
   mix-blend-mode: multiply;
-  will-change: transform;
 }
 
 .nf-blob-1 {
@@ -236,20 +235,14 @@ html {
 
 /* Frosted-glass surfaces */
 .nf-glass {
-  background-color: oklch(1 0 0 / 0.55);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid oklch(1 0 0 / 0.6);
-  box-shadow:
-    0 10px 30px -12px oklch(0.55 0.14 200 / 0.25),
-    inset 0 1px 0 0 oklch(1 0 0 / 0.7);
+  background-color: oklch(1 0 0 / 0.88);
+  border: 1px solid oklch(0.9 0.01 240 / 0.5);
+  box-shadow: 0 4px 16px -6px oklch(0.5 0.1 200 / 0.12);
 }
 
 .nf-glass-soft {
-  background-color: oklch(1 0 0 / 0.4);
-  backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
-  border: 1px solid oklch(1 0 0 / 0.5);
+  background-color: oklch(1 0 0 / 0.75);
+  border: 1px solid oklch(0.9 0.01 240 / 0.4);
 }
 
 /* Brand gradient text + buttons */
@@ -338,28 +331,17 @@ html {
    NutriFit Premium 2026 — SaaS-grade glass, motion & depth
    ============================================================ */
 
-/* Aurora gradient border card — the signature premium surface */
+/* Premium card surface — NO backdrop-filter (GPU killer), NO position:relative (layout bug) */
 .nf-premium {
-  position: relative;
-  background: oklch(1 0 0 / 0.72);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid oklch(1 0 0 / 0.7);
-  box-shadow:
-    0 1px 0 0 oklch(1 0 0 / 0.9) inset,
-    0 0 0 1px oklch(0.6 0.12 185 / 0.08),
-    0 20px 50px -20px oklch(0.55 0.14 200 / 0.22),
-    0 8px 24px -12px oklch(0.4 0.1 200 / 0.12);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: oklch(0.98 0.004 240 / 0.92);
+  border: 1px solid oklch(0.9 0.01 240 / 0.6);
+  box-shadow: 0 2px 8px -2px oklch(0.5 0.1 200 / 0.1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .nf-premium:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 1px 0 0 oklch(1 0 0 / 0.9) inset,
-    0 0 0 1px oklch(0.6 0.12 185 / 0.14),
-    0 30px 60px -20px oklch(0.55 0.14 200 / 0.3),
-    0 12px 32px -12px oklch(0.4 0.1 200 / 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -8px oklch(0.5 0.1 200 / 0.2);
 }
 
 /* Animated gradient border (conic) for hero cards */
@@ -472,9 +454,9 @@ html {
 .nf-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(60px);
+  filter: blur(30px);
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 /* Recharts premium overrides */

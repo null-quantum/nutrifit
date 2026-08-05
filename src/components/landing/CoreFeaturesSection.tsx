@@ -113,7 +113,7 @@ const CoreFeaturesSection = () => {
                 className="group relative w-full h-[400px] rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 cursor-pointer transition-shadow duration-500 ease-out hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] will-change-transform"
               >
                 <div className="absolute inset-0 z-0">
-                  <img
+                  <img loading="lazy"
                     src={feature.image}
                     alt={feature.title}
                     className="w-full h-full object-cover object-center transform-gpu transition-transform duration-700 ease-out group-hover:scale-[1.05] will-change-transform"
