@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -12,6 +13,29 @@ import {
   PolarAngleAxis,
 } from "recharts";
 import { useMemo } from "react";
+
+/**
+ * Reads a CSS variable from :root and returns its value.
+ * Re-reads when the theme changes (via a MutationObserver on data-theme).
+ * This is needed because Recharts SVG attributes can't use var() directly.
+ */
+function useThemeVar(varName: string, fallback: string): string {
+  const [val, setVal] = useState(fallback);
+
+  useEffect(() => {
+    const read = () => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      if (v) setVal(v);
+    };
+    read();
+    // Watch for theme changes
+    const observer = new MutationObserver(read);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "style"] });
+    return () => observer.disconnect();
+  }, [varName]);
+
+  return val;
+}
 
 /* ============================================================
    MINI SPARKLINE
@@ -100,10 +124,12 @@ export function CalorieRing({
   size = 200,
   label = "",
   sublabel = "",
-  color = "#06b6d4",
 }: CalorieRingProps) {
   const pct = Math.min(Math.round((value / target) * 100), 100);
-  const data = [{ name: "progress", value: pct, fill: color }];
+  const ringFrom = useThemeVar("--nf-ring-from", "#06b6d4");
+  const ringVia = useThemeVar("--nf-ring-via", "#14b8a6");
+  const ringTo = useThemeVar("--nf-ring-to", "#10b981");
+  const data = [{ name: "progress", value: pct, fill: ringFrom }];
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -120,9 +146,9 @@ export function CalorieRing({
         >
           <defs>
             <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="var(--nf-ring-from, #06b6d4)" />
-              <stop offset="50%" stopColor="var(--nf-ring-via, #14b8a6)" />
-              <stop offset="100%" stopColor="var(--nf-ring-to, #10b981)" />
+              <stop offset="0%" stopColor={ringFrom} />
+              <stop offset="50%" stopColor={ringVia} />
+              <stop offset="100%" stopColor={ringTo} />
             </linearGradient>
           </defs>
           <PolarAngleAxis
@@ -312,6 +338,8 @@ export function WeeklyTrendChart({
   targetCalories = 2200,
   className = "",
 }: WeeklyTrendChartProps) {
+  const accent = useThemeVar("--nf-accent", "#06b6d4");
+  const accent2 = useThemeVar("--nf-accent-2", "#14b8a6");
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const data = useMemo(() => {
@@ -334,8 +362,8 @@ export function WeeklyTrendChart({
         <AreaChart data={data} margin={{ top: 5, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--nf-accent, #06b6d4)" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="var(--nf-accent, #06b6d4)" stopOpacity={0} />
+              <stop offset="0%" stopColor={accent} stopOpacity={0.3} />
+              <stop offset="100%" stopColor={accent} stopOpacity={0} />
             </linearGradient>
           </defs>
           <Tooltip
@@ -352,14 +380,14 @@ export function WeeklyTrendChart({
           <Area
             type="monotone"
             dataKey="calories"
-            stroke="var(--nf-accent, #06b6d4)"
+            stroke={accent}
             strokeWidth={2.5}
             fill="url(#trendGrad)"
             isAnimationActive
             animationDuration={1200}
             animationBegin={300}
-            dot={{ r: 3, fill: "var(--nf-accent, #06b6d4)", strokeWidth: 0 }}
-            activeDot={{ r: 5, fill: "var(--nf-accent-2, #14b8a6)", strokeWidth: 0 }}
+            dot={{ r: 3, fill: accent, strokeWidth: 0 }}
+            activeDot={{ r: 5, fill: accent2, strokeWidth: 0 }}
           />
         </AreaChart>
       </ResponsiveContainer>

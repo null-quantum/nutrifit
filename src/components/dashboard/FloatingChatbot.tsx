@@ -185,13 +185,13 @@ export function FloatingChatbot() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         aria-label="Open AI chat assistant"
-        className={`fixed bottom-5 right-5 z-50 size-16 rounded-full shadow-2xl shadow-cyan-500/30 flex items-center justify-center transition-opacity ${
+        className={`fixed bottom-5 right-5 z-50 size-16 rounded-full shadow-2xl th-glow flex items-center justify-center transition-opacity ${
           open ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
       >
         {/* Pulsing gradient halo behind the button */}
         <motion.span
-          className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400 via-teal-400 to-emerald-400"
+          className="absolute inset-0 rounded-full th-gradient"
           animate={{ scale: [1, 1.12, 1], opacity: [0.55, 0.85, 0.55] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -212,8 +212,8 @@ export function FloatingChatbot() {
         </span>
         {/* live-pulse ping */}
         <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white" />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full th-bg-solid-2 opacity-75" />
+          <span className="relative inline-flex rounded-full h-3.5 w-3.5 th-bg-30 border-2 border-white" />
         </span>
       </motion.button>
 
@@ -241,10 +241,10 @@ export function FloatingChatbot() {
             >
               {/* HEADER — close button */}
               <div className="px-4 py-3 flex items-center justify-between shrink-0 border-b border-white/40 bg-white/50 backdrop-blur-xl relative">
-                <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-teal-400/50 to-transparent" />
+                <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent th-text-2 to-transparent" />
                 <div className="flex items-center gap-2.5">
                   <div className="relative">
-                    <div className="size-9 rounded-xl overflow-hidden bg-gradient-to-br from-cyan-100 to-emerald-100 flex items-center justify-center border border-white/60">
+                    <div className="size-9 rounded-xl overflow-hidden th-bg flex items-center justify-center border border-white/60">
                       <motion.img
                         src="/chatbot-icon.png"
                         alt=""
@@ -257,14 +257,14 @@ export function FloatingChatbot() {
                       />
                     </div>
                     <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full th-bg-solid-2 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 th-bg-30 border border-white" />
                     </span>
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-1.5">
                       NutriFit AI
-                      <Sparkles size={12} className="text-teal-500" />
+                      <Sparkles size={12} className="th-text-2" />
                     </h3>
                     <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                       <MessageSquare size={9} /> Online · knows your profile
@@ -285,7 +285,7 @@ export function FloatingChatbot() {
               </div>
 
               {/* MESSAGE STREAM */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-linear-to-b from-emerald-50/20 to-transparent nf-scroll">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3  nf-scroll">
                 <AnimatePresence initial={false}>
                   {messages.map((msg, idx) => {
                     const isAi = msg.role === "assistant";
@@ -303,7 +303,7 @@ export function FloatingChatbot() {
                         <div
                           className={`shrink-0 size-8 rounded-lg flex items-center justify-center overflow-hidden border ${
                             isAi
-                              ? "bg-linear-to-br from-cyan-100 to-emerald-100 border-white/60"
+                              ? "th-bg border-white/60"
                               : "bg-linear-to-br from-slate-800 to-slate-900 border-transparent text-white"
                           }`}
                         >
@@ -329,7 +329,7 @@ export function FloatingChatbot() {
                           {isAi ? (
                             <span className="whitespace-pre-wrap">{msg.text}</span>
                           ) : (
-                            <span className="nf-text-aurora font-bold whitespace-pre-wrap">
+                            <span className="th-text-gradient font-bold whitespace-pre-wrap">
                               {msg.text}
                             </span>
                           )}
@@ -349,7 +349,7 @@ export function FloatingChatbot() {
                       transition={{ type: "spring", stiffness: 320, damping: 28 }}
                       className="flex gap-2.5 text-left"
                     >
-                      <div className="shrink-0 size-8 rounded-lg flex items-center justify-center overflow-hidden bg-linear-to-br from-cyan-100 to-emerald-100 border border-white/60">
+                      <div className="shrink-0 size-8 rounded-lg flex items-center justify-center overflow-hidden th-bg border border-white/60">
                         <motion.img
                           src="/chatbot-icon.png"
                           alt=""
@@ -362,7 +362,7 @@ export function FloatingChatbot() {
                         {[0, 1, 2].map((i) => (
                           <motion.span
                             key={i}
-                            className="w-1.5 h-1.5 rounded-full bg-linear-to-r from-emerald-500 to-teal-500"
+                            className="w-1.5 h-1.5 rounded-full th-gradient"
                             animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
                             transition={{
                               duration: 0.8,
@@ -389,7 +389,7 @@ export function FloatingChatbot() {
                     whileHover={{ scale: 1.04, y: -1 }}
                     whileTap={{ scale: 0.96 }}
                     transition={springSoft}
-                    className="nf-glass-soft text-[10px] font-bold tracking-wide text-emerald-700 px-2.5 py-1.5 rounded-lg border border-white/50 whitespace-nowrap cursor-pointer"
+                    className="nf-glass-soft text-[10px] font-bold tracking-wide th-text-3 px-2.5 py-1.5 rounded-lg border border-white/50 whitespace-nowrap cursor-pointer"
                   >
                     {t.label}
                   </motion.button>
@@ -410,7 +410,7 @@ export function FloatingChatbot() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask anything…"
-                  className="flex-1 bg-white/80 border border-white/60 rounded-xl px-3.5 py-3 text-sm font-semibold outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/40 text-slate-800 transition-all"
+                  className="flex-1 bg-white/80 border border-white/60 rounded-xl px-3.5 py-3 text-sm font-semibold outline-none focus:bg-white focus:ring-2 th-ring text-slate-800 transition-all"
                   required
                 />
                 <motion.button

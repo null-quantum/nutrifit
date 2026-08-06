@@ -65,7 +65,7 @@ const macroStyles: Record<
     from: "#38bdf8",
     to: "#06b6d4",
     text: "text-sky-600",
-    bar: "from-sky-400 to-cyan-500",
+    bar: "th-gradient",
     halo: "bg-sky-400",
   },
 };
@@ -232,9 +232,9 @@ export default function NutritionTab() {
         variants={riseItem}
         className="nf-premium nf-aurora-border rounded-3xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden"
       >
-        <div className="absolute -top-12 -right-10 w-48 h-48 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none nf-orb" />
+        <div className="absolute -top-12 -right-10 w-48 h-48 th-bg-solid-2/15 rounded-full blur-3xl pointer-events-none nf-orb" />
         <div className="flex items-center gap-4 relative">
-          <div className="p-3.5 nf-glass text-emerald-600 rounded-2xl">
+          <div className="p-3.5 nf-glass th-text-3 rounded-2xl">
             <Apple size={26} />
           </div>
           <div>
@@ -249,7 +249,7 @@ export default function NutritionTab() {
         <motion.div
           whileHover={{ scale: 1.03, y: -2 }}
           transition={springSoft}
-          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50/80 border border-emerald-100 rounded-xl text-sm font-black text-emerald-700 uppercase tracking-wider"
+          className="flex items-center gap-2 px-4 py-2.5 th-bg-3/80 border th-border-light rounded-xl text-sm font-black th-text-3 uppercase tracking-wider"
         >
           <ShieldCheck size={16} /> {dietPreference}
         </motion.div>
@@ -261,7 +261,7 @@ export default function NutritionTab() {
         <div className="lg:col-span-7 space-y-6">
           <GlassCard className="p-6 space-y-4">
             <div className="flex items-center gap-2.5 text-slate-800 font-black text-lg tracking-tight mb-3">
-              <Utensils size={20} className="text-teal-500" />
+              <Utensils size={20} className="th-text-2" />
               <span>Describe Your Meal</span>
             </div>
 
@@ -270,7 +270,7 @@ export default function NutritionTab() {
                 value={mealInput}
                 onChange={(e) => setMealInput(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 bg-slate-50/70 border border-slate-200/70 rounded-xl font-medium outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/40 text-sm text-slate-800 transition-all resize-none"
+                className="w-full px-4 py-3 bg-slate-50/70 border border-slate-200/70 rounded-xl font-medium outline-none focus:bg-white focus:ring-2 th-ring text-sm text-slate-800 transition-all resize-none"
                 placeholder="I ate 2 scrambled eggs with cheese, 2 slices of whole wheat toast with butter, and a glass of orange juice..."
                 disabled={loading}
               />
@@ -304,7 +304,7 @@ export default function NutritionTab() {
                   whileHover={{ scale: 1.04, y: -2 }}
                   whileTap={{ scale: 0.96 }}
                   transition={springSoft}
-                  className="nf-glass-soft px-3 py-1.5 rounded-lg text-slate-600 hover:text-emerald-700 text-xs font-bold transition-colors border border-white/50"
+                  className="nf-glass-soft px-3 py-1.5 rounded-lg text-slate-600 hover:th-text-3 text-xs font-bold transition-colors border border-white/50"
                 >
                   {prompt}
                 </motion.button>
@@ -315,7 +315,7 @@ export default function NutritionTab() {
           {/* PHOTO ANALYSIS CARD */}
           <GlassCard className="p-6 space-y-4">
             <div className="flex items-center gap-2.5 text-slate-800 font-black text-lg tracking-tight mb-2">
-              <Camera size={20} className="text-cyan-500" />
+              <Camera size={20} className="th-text" />
               <span>Snap a Photo</span>
             </div>
             <p className="text-xs text-slate-400 font-semibold -mt-2 mb-2">
@@ -337,8 +337,8 @@ export default function NutritionTab() {
                   onChange={handlePhotoSelect}
                   className="hidden"
                 />
-                <div className="border-2 border-dashed border-slate-300 rounded-2xl py-12 flex flex-col items-center justify-center gap-3 hover:border-cyan-400 hover:bg-cyan-50/30 transition-all">
-                  <div className="p-4 bg-cyan-50 text-cyan-500 rounded-2xl">
+                <div className="border-2 border-dashed border-slate-300 rounded-2xl py-12 flex flex-col items-center justify-center gap-3 hover:th-border hover:th-bg/30 transition-all">
+                  <div className="p-4 th-bg th-text rounded-2xl">
                     <Camera size={28} />
                   </div>
                   <div className="text-center">
@@ -396,14 +396,14 @@ export default function NutritionTab() {
                     initial={{ opacity: 0, y: 12, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="bg-gradient-to-br from-cyan-50 to-teal-50 border border-cyan-200/60 rounded-2xl p-4 space-y-3"
+                    className="bg-gradient-to-br th-bg border th-border-light rounded-2xl p-4 space-y-3"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-cyan-700 uppercase tracking-widest flex items-center gap-1.5">
+                      <span className="text-xs font-black th-text-accent uppercase tracking-widest flex items-center gap-1.5">
                         <Sparkles size={13} /> AI Estimate
                       </span>
                       {photoSaved && (
-                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                        <span className="text-xs font-bold th-text-3 flex items-center gap-1">
                           <CheckCircle size={12} /> Saved!
                         </span>
                       )}
@@ -482,8 +482,8 @@ export default function NutritionTab() {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="nf-premium rounded-3xl p-10 relative overflow-hidden flex flex-col items-center justify-center text-center min-h-[260px]"
               >
-                <div className="nf-orb w-40 h-40 bg-emerald-400/20 -top-6 -left-6 animate-pulse" />
-                <div className="nf-orb w-32 h-32 bg-teal-400/20 -bottom-6 -right-6" />
+                <div className="nf-orb w-40 h-40 th-bg-solid-2/20 -top-6 -left-6 animate-pulse" />
+                <div className="nf-orb w-32 h-32 th-bg-solid-2/20 -bottom-6 -right-6" />
                 <motion.div
                   animate={{ y: [0, -8, 0] }}
                   transition={{
@@ -491,7 +491,7 @@ export default function NutritionTab() {
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
-                  className="p-4 nf-glass rounded-2xl text-emerald-500 mb-4 relative"
+                  className="p-4 nf-glass rounded-2xl th-text-3 mb-4 relative"
                 >
                   <Utensils size={28} />
                 </motion.div>
@@ -530,7 +530,7 @@ export default function NutritionTab() {
                     transition={springSoft}
                     className={`nf-shimmer flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors ${
                       saved
-                        ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                        ? "th-bg-3 border th-border-light th-text-3"
                         : "nf-btn-gradient text-white"
                     }`}
                   >
@@ -691,13 +691,13 @@ export default function NutritionTab() {
                 {analysis.tip && (
                   <motion.div
                     variants={riseItem}
-                    className="bg-linear-to-r from-emerald-50/70 to-teal-50/40 border border-emerald-100/60 rounded-2xl p-4 flex items-start gap-3"
+                    className="bg-linear-to-r th-bg-3 border th-border-light rounded-2xl p-4 flex items-start gap-3"
                   >
                     <Sparkles
                       size={18}
-                      className="text-emerald-500 shrink-0 mt-0.5"
+                      className="th-text-3 shrink-0 mt-0.5"
                     />
-                    <p className="text-sm text-emerald-800 font-semibold leading-relaxed">
+                    <p className="text-sm th-text-3 font-semibold leading-relaxed">
                       {analysis.tip}
                     </p>
                   </motion.div>
@@ -751,7 +751,7 @@ export default function NutritionTab() {
         {/* RIGHT: TARGET MACROS */}
         <GlassCard className="lg:col-span-5 p-6 space-y-6" hover={false}>
           <div className="flex items-center gap-2.5">
-            <HeartPulse size={20} className="text-cyan-500" />
+            <HeartPulse size={20} className="th-text" />
             <h3 className="text-base font-black text-slate-900 uppercase tracking-wider">
               Target Matrix Distribution
             </h3>
@@ -786,14 +786,14 @@ export default function NutritionTab() {
               {
                 label: "Carbohydrate Target",
                 value: macros.carbs,
-                wrap: "bg-teal-50/40 border-teal-100/30",
-                txt: "text-teal-700",
+                wrap: "th-bg-2/40 th-border-light/30",
+                txt: "th-text-2",
               },
               {
                 label: "Fat Target",
                 value: macros.fat,
-                wrap: "bg-cyan-50/40 border-cyan-100/30",
-                txt: "text-cyan-700",
+                wrap: "th-bg/40 th-border-light",
+                txt: "th-text-accent",
               },
             ].map((t) => (
               <motion.div

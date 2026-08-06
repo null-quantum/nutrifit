@@ -73,18 +73,18 @@ export default function DashboardLayout({
       <div className="lg:hidden sticky top-0 z-40 nf-premium rounded-none border-b border-white/40">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center shadow-md shadow-teal-500/20">
+            <div className="w-8 h-8 rounded-lg th-gradient flex items-center justify-center shadow-md th-glow-sm">
               <Sparkles size={14} className="text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-base font-black tracking-tighter">
-              <span className="nf-text-aurora">NutriFit</span>
-              <span className="text-cyan-500">.</span>
+              <span className="th-text-gradient">NutriFit</span>
+              <span className="th-text">.</span>
             </h1>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => useAuthStore.getState().setView("landing")}
-              className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-cyan-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-cyan-50/60"
+              className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:th-text transition-colors px-3 py-1.5 rounded-lg hover:th-bg/60"
             >
               <Home size={14} /> Home
             </button>
@@ -114,7 +114,7 @@ export default function DashboardLayout({
                   <motion.span
                     layoutId="activeMobileTab"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 shadow-md shadow-teal-500/30"
+                    className="absolute inset-0 rounded-lg th-gradient shadow-md th-glow"
                   />
                 )}
                 <span className="relative z-10 flex items-center gap-1.5">

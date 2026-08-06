@@ -31,20 +31,20 @@ import {
 const tierAccents: Record<string, { active: string; ring: string; text: string }> =
   {
     Experience: {
-      active: "from-teal-500/15 to-cyan-500/10 border-teal-400/50 text-teal-700",
+      active: "th-bg-2 th-border th-text-2",
       ring: "nf-ring-glow",
-      text: "text-teal-700",
+      text: "th-text-2",
     },
     Objective: {
-      active: "from-cyan-500/15 to-sky-500/10 border-cyan-400/50 text-cyan-700",
+      active: "th-bg th-border th-text-accent",
       ring: "nf-ring-glow",
-      text: "text-cyan-700",
+      text: "th-text-accent",
     },
     Gear: {
       active:
-        "from-emerald-500/15 to-teal-500/10 border-emerald-400/50 text-emerald-700",
+        "th-bg-3 th-border th-text-3",
       ring: "nf-ring-glow",
-      text: "text-emerald-700",
+      text: "th-text-3",
     },
   };
 
@@ -269,9 +269,9 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="p-4 bg-linear-to-r from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-100 rounded-2xl flex items-center gap-3 text-sm font-bold text-emerald-800"
+            className="p-4 th-bg-3 th-border-light border rounded-2xl flex items-center gap-3 text-sm font-bold th-text-3"
           >
-            <RefreshCw size={18} className="text-emerald-500" />
+            <RefreshCw size={18} className="th-text-3" />
             <span>
               Cloud Synchronization Complete. Local hard-drive configurations
               match cluster values.
@@ -298,13 +298,13 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
         variants={riseItem}
         className="nf-premium nf-aurora-border rounded-3xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden"
       >
-        <div className="absolute -top-12 -right-10 w-48 h-48 bg-teal-400/15 rounded-full blur-3xl pointer-events-none nf-orb" />
+        <div className="absolute -top-12 -right-10 w-48 h-48 th-bg-2 rounded-full blur-3xl pointer-events-none nf-orb" />
         <div className="flex items-center gap-4 relative">
-          <div className="p-3.5 nf-glass text-teal-600 rounded-2xl">
+          <div className="p-3.5 nf-glass th-text-2 rounded-2xl">
             <Dumbbell size={26} />
           </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight nf-text-aurora">
+            <h3 className="text-2xl font-black tracking-tight th-text-gradient">
               {activePathway}
             </h3>
             <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mt-1">
@@ -337,14 +337,14 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
             exit={{ opacity: 0, scale: 0.97 }}
             className="nf-premium rounded-3xl p-8 relative overflow-hidden space-y-8 max-w-4xl mx-auto"
           >
-            <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/10 rounded-full blur-3xl pointer-events-none nf-orb" />
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none nf-orb" />
+            <div className="absolute top-0 right-0 w-40 h-40 th-bg-20/10 rounded-full blur-3xl pointer-events-none nf-orb" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 th-bg-30/10 rounded-full blur-3xl pointer-events-none nf-orb" />
 
             <motion.div
               variants={riseItem}
               className="text-center space-y-2 max-w-xl mx-auto relative"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-linear-to-r from-teal-500/10 to-cyan-500/10 border border-teal-100 text-teal-700 font-bold text-xs uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full th-bg-2 th-border-light border th-text-2 font-bold text-xs uppercase tracking-wider">
                 <Sparkles size={12} className="animate-pulse" /> Core
                 Initialization
               </div>
@@ -429,7 +429,7 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
                     {[0, 1, 2].map((i) => (
                       <motion.span
                         key={i}
-                        className="w-2.5 h-2.5 rounded-full bg-linear-to-r from-teal-500 to-cyan-500"
+                        className="w-2.5 h-2.5 rounded-full th-gradient"
                         animate={{ y: [0, -8, 0], opacity: [0.4, 1, 0.4] }}
                         transition={{
                           duration: 0.9,
@@ -480,7 +480,7 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
             <div className="lg:col-span-7 space-y-4">
               <GlassCard className="p-6 space-y-4" hover={false}>
                 <div className="flex items-center gap-2 font-black text-lg tracking-tight mb-2 border-b border-slate-100/60 pb-3">
-                  <Target size={20} className="text-teal-500" />
+                  <Target size={20} className="th-text-2" />
                   <span>Generated Circuit Objectives</span>
                 </div>
 
@@ -518,8 +518,8 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
                               transition={springSoft}
                               className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 relative ${
                                 isChecked
-                                  ? "bg-linear-to-r from-teal-500 to-emerald-500 border-teal-400 text-white nf-ring-glow"
-                                  : "border-slate-300 bg-white/60 text-transparent hover:border-teal-400"
+                                  ? "th-gradient text-white th-glow"
+                                  : "border-slate-300 bg-white/60 text-transparent hover:th-border"
                               }`}
                             >
                               <motion.span
@@ -575,17 +575,17 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
                               <div className="px-4 pb-5 pt-1 border-t border-slate-100/60 space-y-4 text-sm font-medium">
                                 <div className="bg-slate-50/70 rounded-xl p-3 text-xs font-bold text-slate-500 uppercase tracking-wider mt-3">
                                   Target Zone:{" "}
-                                  <span className="nf-text-aurora font-black normal-case tracking-tight">
+                                  <span className="th-text-gradient font-black normal-case tracking-tight">
                                     {exercise.target}
                                   </span>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                  <div className="flex items-center gap-1.5 text-emerald-700 font-black text-xs uppercase tracking-wider">
+                                  <div className="flex items-center gap-1.5 th-text-3 font-black text-xs uppercase tracking-wider">
                                     <HelpCircle size={14} /> Correct Execution
                                     Form
                                   </div>
-                                  <p className="text-slate-600 leading-relaxed pl-5 bg-emerald-50/30 border-l-2 border-emerald-500 py-1 rounded-r-md">
+                                  <p className="text-slate-600 leading-relaxed pl-5 th-bg-3/30 border-l-2 th-border py-1 rounded-r-md">
                                     {exercise.form}
                                   </p>
                                 </div>
@@ -634,7 +634,7 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
 
                 <div className="w-full h-3.5 bg-slate-200/70 rounded-full overflow-hidden relative border border-slate-100/60">
                   <motion.div
-                    className="h-full bg-linear-to-r from-teal-500 via-cyan-500 to-emerald-500 rounded-full relative"
+                    className="h-full th-gradient rounded-full relative"
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPct}%` }}
                     transition={{
@@ -669,7 +669,7 @@ export default function FitnessTab({ user }: { user: SafeUser | null }) {
               <div className="pt-4 border-t border-slate-100/60 flex items-start gap-3 px-1 text-slate-400 text-xs font-semibold leading-relaxed">
                 <CheckCircle2
                   size={16}
-                  className="text-emerald-500 shrink-0 mt-0.5"
+                  className="th-text-3 shrink-0 mt-0.5"
                 />
                 <p>
                   Checking off items increments your metric progress bar live. To

@@ -178,7 +178,7 @@ export default function AnalyticsTab() {
           className="nf-premium rounded-3xl p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600 ring-1 ring-emerald-100">
+            <div className="p-2.5 rounded-xl th-bg-3 th-text-3">
               <Flame size={18} />
             </div>
             <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
@@ -201,7 +201,7 @@ export default function AnalyticsTab() {
           className="nf-premium rounded-3xl p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-50 to-cyan-100 text-cyan-600 ring-1 ring-cyan-100">
+            <div className="p-2.5 rounded-xl th-bg th-text">
               <Footprints size={18} />
             </div>
             <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
@@ -224,7 +224,7 @@ export default function AnalyticsTab() {
           className="nf-premium rounded-3xl p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 text-teal-600 ring-1 ring-teal-100">
+            <div className="p-2.5 rounded-xl th-bg-2 th-text-2">
               <TrendingUp size={18} />
             </div>
             <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
@@ -249,7 +249,7 @@ export default function AnalyticsTab() {
       >
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-50 to-cyan-100 text-cyan-600 ring-1 ring-cyan-100">
+            <div className="p-2.5 rounded-xl th-bg th-text">
               <BarChart3 size={18} />
             </div>
             <div>
@@ -311,7 +311,7 @@ export default function AnalyticsTab() {
       >
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600 ring-1 ring-emerald-100">
+            <div className="p-2.5 rounded-xl th-bg-3 th-text-3">
               <TrendingUp size={18} />
             </div>
             <div>
@@ -396,7 +396,7 @@ export default function AnalyticsTab() {
       >
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-xl shadow-lg shadow-teal-500/20">
+            <div className="p-2.5 th-gradient text-white rounded-xl shadow-lg th-glow-sm">
               <FileText size={18} />
             </div>
             <div>
@@ -478,7 +478,7 @@ export default function AnalyticsTab() {
             </div>
 
             {/* Summary */}
-            <div className="p-4 bg-cyan-50/60 rounded-2xl border border-cyan-100/60">
+            <div className="p-4 th-bg/60 rounded-2xl border th-border-light">
               <p className="text-sm font-semibold text-slate-700 leading-relaxed">
                 {report.summary}
               </p>
@@ -497,7 +497,7 @@ export default function AnalyticsTab() {
                   transition={{ delay: 0.1 + i * 0.08 }}
                   className="flex items-start gap-2.5 p-3 bg-white/60 rounded-xl border border-slate-200/60"
                 >
-                  <span className="size-1.5 rounded-full bg-cyan-400 mt-2 shrink-0" />
+                  <span className="size-1.5 rounded-full th-bg-solid mt-2 shrink-0" />
                   <p className="text-sm font-medium text-slate-600">{insight}</p>
                 </motion.div>
               ))}
@@ -506,7 +506,7 @@ export default function AnalyticsTab() {
             {/* Recommendations */}
             <div className="space-y-2">
               <p className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                <Target size={13} className="text-emerald-500" /> Recommendations for Next Week
+                <Target size={13} className="th-text-3" /> Recommendations for Next Week
               </p>
               {report.recommendations.map((rec, i) => (
                 <motion.div
@@ -514,9 +514,9 @@ export default function AnalyticsTab() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + i * 0.08 }}
-                  className="flex items-start gap-2.5 p-3 bg-emerald-50/60 rounded-xl border border-emerald-100/60"
+                  className="flex items-start gap-2.5 p-3 th-bg-3/60 rounded-xl border th-border-light"
                 >
-                  <span className="size-1.5 rounded-full bg-emerald-500 mt-2 shrink-0" />
+                  <span className="size-1.5 rounded-full th-bg-30 mt-2 shrink-0" />
                   <p className="text-sm font-medium text-slate-600">{rec}</p>
                 </motion.div>
               ))}

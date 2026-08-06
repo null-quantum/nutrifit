@@ -107,7 +107,7 @@ export default function UserSettingsTab() {
 
   // Shared input class — elevated frosted style with focus lift
   const inputBase =
-    "w-full px-4 py-3.5 bg-white/60 backdrop-blur-md border border-white/70 rounded-xl font-medium text-slate-800 text-base outline-none transition-all duration-300 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:bg-white focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-400/60 focus:shadow-[0_8px_24px_-8px_rgba(16,185,129,0.25),inset_0_1px_2px_rgba(0,0,0,0.04)] focus:-translate-y-0.5";
+    "w-full px-4 py-3.5 bg-white/60 backdrop-blur-md border border-white/70 rounded-xl font-medium text-slate-800 text-base outline-none transition-all duration-300 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:bg-white focus:ring-2 th-ring focus:th-border/60 focus:shadow-[0_8px_24px_-8px_rgba(16,185,129,0.25),inset_0_1px_2px_rgba(0,0,0,0.04)] focus:-translate-y-0.5";
 
   return (
     <motion.div
@@ -136,7 +136,7 @@ export default function UserSettingsTab() {
       >
         <div>
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-            <span className="nf-text-aurora">Account Configurations</span>
+            <span className="th-text-gradient">Account Configurations</span>
           </h2>
           <p className="text-base text-slate-400 font-medium mt-1">
             Manage your active metabolic metrics, credentials, and tracking
@@ -164,9 +164,9 @@ export default function UserSettingsTab() {
               initial="hidden"
               animate="show"
               exit={{ opacity: 0, scale: 0.94 }}
-              className="p-4 bg-emerald-50/80 backdrop-blur-md border border-emerald-200 text-emerald-800 rounded-2xl text-base font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/10"
+              className="p-4 th-bg-3/80 backdrop-blur-md border th-border-light th-text-3 rounded-2xl text-base font-bold flex items-center gap-2 shadow-lg th-glow-sm"
             >
-              <ShieldCheck size={18} className="text-emerald-600" /> Profile
+              <ShieldCheck size={18} className="th-text-3" /> Profile
               updated — your TDEE &amp; macros have been recalculated.
             </motion.div>
           )}
@@ -195,7 +195,7 @@ export default function UserSettingsTab() {
               </label>
               <div className="relative group">
                 <User
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:th-text-3 transition-colors z-10"
                   size={18}
                 />
                 <input
@@ -234,28 +234,28 @@ export default function UserSettingsTab() {
                   icon: User,
                   value: age,
                   setter: setAge,
-                  accent: "from-cyan-400 to-teal-500",
+                  accent: "th-gradient",
                 },
                 {
                   label: "Weight (kg)",
                   icon: Weight,
                   value: weight,
                   setter: setWeight,
-                  accent: "from-emerald-400 to-teal-500",
+                  accent: "th-gradient",
                 },
                 {
                   label: "Height (cm)",
                   icon: Ruler,
                   value: height,
                   setter: setHeight,
-                  accent: "from-teal-400 to-cyan-500",
+                  accent: "th-gradient",
                 },
                 {
                   label: "Step Target",
                   icon: Footprints,
                   value: stepGoal,
                   setter: setStepGoal,
-                  accent: "from-cyan-400 to-emerald-500",
+                  accent: "th-gradient",
                 },
               ].map((field) => {
                 const Icon = field.icon;
@@ -292,7 +292,7 @@ export default function UserSettingsTab() {
             </label>
             <div className="relative group">
               <Flame
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors z-10"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:th-text-3 transition-colors z-10"
                 size={18}
               />
               <select
@@ -347,7 +347,7 @@ export default function UserSettingsTab() {
         className="nf-premium rounded-3xl p-8 space-y-6"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-teal-500 text-white rounded-xl shadow-lg shadow-cyan-500/20">
+          <div className="p-2.5 th-gradient text-white rounded-xl shadow-lg th-glow-sm">
             <Bell size={20} />
           </div>
           <div>
@@ -384,7 +384,7 @@ export default function UserSettingsTab() {
             {/* Master toggle */}
             <div className="flex items-center justify-between p-4 bg-slate-50/80 rounded-2xl border border-slate-200/60">
               <div className="flex items-center gap-3">
-                <CheckCircle2 size={18} className="text-emerald-500" />
+                <CheckCircle2 size={18} className="th-text-3" />
                 <span className="font-bold text-slate-700 text-sm">Reminders Active</span>
               </div>
               <button
@@ -418,7 +418,7 @@ export default function UserSettingsTab() {
             {/* Workout */}
             <div className="flex items-center justify-between p-4 bg-white/60 rounded-2xl border border-slate-200/60">
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${prefs.workout ? "text-emerald-500 bg-emerald-50" : "text-slate-300 bg-slate-50"}`}>
+                <div className={`p-2 rounded-lg ${prefs.workout ? "th-text-3 th-bg-3" : "text-slate-300 bg-slate-50"}`}>
                   <Dumbbell size={16} />
                 </div>
                 <div>
@@ -431,7 +431,7 @@ export default function UserSettingsTab() {
                   type="time"
                   value={prefs.workoutTime}
                   onChange={(e) => updatePrefs({ workoutTime: e.target.value })}
-                  className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none focus:ring-2 th-ring"
                 />
                 <ToggleSwitch
                   on={prefs.workout}
@@ -481,7 +481,7 @@ function ToggleSwitch({ on, onClick }: { on: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`relative w-11 h-6 rounded-full transition-colors ${on ? "bg-emerald-500" : "bg-slate-300"}`}
+      className={`relative w-11 h-6 rounded-full transition-colors ${on ? "th-bg-30" : "bg-slate-300"}`}
     >
       <span
         className={`absolute top-0.5 left-0.5 size-5 bg-white rounded-full shadow-sm transition-transform ${on ? "translate-x-5" : ""}`}

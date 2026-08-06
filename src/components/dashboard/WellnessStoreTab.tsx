@@ -205,19 +205,19 @@ export default function WellnessStoreTab() {
         className="nf-premium rounded-3xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden"
       >
         {/* Aurora wash overlay */}
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r th-bg-3  to-transparent" />
 
         <div className="flex items-center gap-4">
           <motion.div
             whileHover={{ rotate: -6, scale: 1.05 }}
             transition={springSoft}
-            className="p-3.5 bg-gradient-to-br from-white to-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl shadow-lg shadow-emerald-500/10"
+            className="p-3.5 th-bg-3 border th-border-light th-text-3 rounded-2xl shadow-lg th-glow-sm"
           >
             <ShoppingBag size={26} />
           </motion.div>
           <div>
             <h3 className="text-2xl font-black tracking-tight">
-              <span className="nf-text-aurora">Wellness Store Marketplace</span>
+              <span className="th-text-gradient">Wellness Store Marketplace</span>
             </h3>
             <p className="text-sm text-slate-400 font-bold uppercase tracking-wider mt-1">
               Premium Biometric Enhancers & Fueling Pipelines
@@ -231,12 +231,12 @@ export default function WellnessStoreTab() {
           transition={springSoft}
           className="relative flex items-center gap-2.5 px-4 py-2.5 bg-slate-900 border border-slate-800 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/20 nf-ring-glow"
         >
-          <ShoppingCart size={16} className="text-teal-400" />
+          <ShoppingCart size={16} className="th-text-2" />
           <span>
             Cart Manifest:{" "}
             <AnimatedNumber
               value={cartCount}
-              className="font-mono font-black text-emerald-400"
+              className="font-mono font-black th-text-3"
             />{" "}
             items
           </span>
@@ -246,7 +246,7 @@ export default function WellnessStoreTab() {
               initial={{ scale: 0.4, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={springSoft}
-              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-[10px] font-black text-white flex items-center justify-center shadow-md shadow-emerald-500/40"
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full th-gradient text-[10px] font-black text-white flex items-center justify-center shadow-md th-glow"
             >
               {cartCount}
             </motion.span>
@@ -283,7 +283,7 @@ export default function WellnessStoreTab() {
                 <motion.span
                   layoutId="activeStoreCategory"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 shadow-md shadow-teal-500/30 nf-ring-glow"
+                  className="absolute inset-0 rounded-xl th-gradient shadow-md th-glow nf-ring-glow"
                 />
               )}
               <span className="relative z-10">{cat}</span>
@@ -327,7 +327,7 @@ export default function WellnessStoreTab() {
             {/* Product Meta */}
             <div className="p-6 space-y-3 flex-1">
               <div className="flex justify-between items-start gap-3">
-                <h4 className="text-lg font-black text-slate-800 tracking-tight line-clamp-1 group-hover:text-emerald-600 transition-colors">
+                <h4 className="text-lg font-black text-slate-800 tracking-tight line-clamp-1 group-hover:th-text-3 transition-colors">
                   {product.name}
                 </h4>
                 <div className="flex items-center gap-1 text-amber-500 bg-amber-50 border border-amber-100/60 px-2 py-0.5 rounded-md shrink-0">
@@ -362,7 +362,7 @@ export default function WellnessStoreTab() {
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
                 transition={springSoft}
-                className="relative overflow-hidden bg-gradient-to-r from-slate-900 to-slate-800 hover:from-cyan-600 hover:to-emerald-600 text-white px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-slate-900/20 flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="relative overflow-hidden bg-gradient-to-r from-slate-900 to-slate-800 th-gradient-hover text-white px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-slate-900/20 flex items-center gap-1.5 cursor-pointer transition-colors"
               >
                 <span>Deploy to Cart</span>
                 <ArrowRight size={12} />
@@ -410,7 +410,7 @@ export default function WellnessStoreTab() {
 
               <div className="p-6 space-y-4">
                 <div className="space-y-1">
-                  <span className="text-xs font-black uppercase text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-100/50">
+                  <span className="text-xs font-black uppercase th-text-2 th-bg-2 px-2.5 py-1 rounded-md border th-border-light/50">
                     {selectedProduct.category}
                   </span>
                   <h4 className="text-2xl font-black text-slate-900 tracking-tight pt-2">
@@ -440,7 +440,7 @@ export default function WellnessStoreTab() {
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     transition={springSoft}
-                    className="nf-btn-gradient px-6 py-3.5 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg shadow-teal-500/10 cursor-pointer"
+                    className="nf-btn-gradient px-6 py-3.5 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg th-glow-sm cursor-pointer"
                   >
                     Add To Basket
                   </motion.button>

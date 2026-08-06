@@ -45,8 +45,8 @@ const clinicalTracks: ClinicalTrack[] = [
     name: "PCOS / PCOD Control",
     desc: "Hormone-optimized nutrient ratios and insulin-stabilization filters.",
     icon: Activity,
-    bg: "bg-emerald-50 text-emerald-600",
-    accentColor: "border-emerald-500",
+    bg: "th-bg-3 th-text-3",
+    accentColor: "th-border",
     calorieMultiplier: 0.95,
     proteinRatio: 0.35,
   },
@@ -123,11 +123,11 @@ export default function TracksTab() {
         className="flex flex-col md:flex-row md:items-center justify-between gap-4"
       >
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold text-xs uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full th-bg-3 border th-border-light th-text-3 font-bold text-xs uppercase tracking-wider mb-3">
             Clinical Architecture
           </div>
           <h2 className="text-4xl font-black text-slate-900 tracking-tight">
-            <span className="nf-text-aurora">Personalized Coaching Grid</span>
+            <span className="th-text-gradient">Personalized Coaching Grid</span>
           </h2>
           <p className="text-slate-500 text-base mt-2 max-w-2xl">
             Select an active track condition below. Your daily calorie bounds,
@@ -142,7 +142,7 @@ export default function TracksTab() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: -6 }}
               transition={springSoft}
-              className="flex items-center gap-2 text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 px-4 py-2 rounded-xl h-fit shadow-sm nf-ring-glow"
+              className="flex items-center gap-2 text-xs font-bold th-text-2 th-bg-2 border th-border-light px-4 py-2 rounded-xl h-fit shadow-sm nf-ring-glow"
             >
               <Loader2 size={14} className="animate-spin" />
               <span>Syncing Metrics...</span>
@@ -196,7 +196,7 @@ export default function TracksTab() {
                     animate={{ scale: 1, opacity: 1, rotate: 0 }}
                     exit={{ scale: 0.4, opacity: 0 }}
                     transition={springSoft}
-                    className="absolute top-4 right-4 text-emerald-600"
+                    className="absolute top-4 right-4 th-text-3"
                   >
                     <CheckCircle2 size={22} fill="#ecfdf5" />
                   </motion.div>
@@ -210,7 +210,7 @@ export default function TracksTab() {
                   className={`relative w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${track.bg}`}
                 >
                   {/* gradient ring backdrop */}
-                  <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-emerald-400/20 blur-md -z-10" />
+                  <div className="absolute -inset-1 rounded-2xl th-bg blur-md -z-10" />
                   <Icon size={26} />
                 </motion.div>
                 <h3 className="text-xl font-black text-slate-800 tracking-tight">
@@ -236,7 +236,7 @@ export default function TracksTab() {
                       whileInView={{ width: `${caloriePct}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-teal-500"
+                      className="h-full rounded-full th-gradient"
                     />
                   </div>
                 </div>
@@ -254,7 +254,7 @@ export default function TracksTab() {
                       whileInView={{ width: `${proteinPct}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500"
+                      className="h-full rounded-full th-gradient"
                     />
                   </div>
                 </div>
