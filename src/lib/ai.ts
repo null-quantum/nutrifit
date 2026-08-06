@@ -1,33 +1,35 @@
 import ZAI from "z-ai-web-dev-sdk";
+import { GoogleGenAI } from "@google/genai";
 
 /**
  * Shared AI helper for NutriFit.
  *
- * Uses Grok (xAI) — OpenAI-compatible API at api.x.ai/v1.
+ * Uses Google Gemini via the @google/genai SDK.
  * Falls back to z-ai-web-dev-sdk in the sandbox.
  *
  * Env vars:
- *   XAI_API_KEY  — your Grok API key (starts with "xai-")
- *   XAI_MODEL    — model name (default: "grok-3-mini")
+ *   GEMINI_API_KEY  — your Gemini API key (from aistudio.google.com)
+ *   GEMINI_MODEL    — model name (default: "gemini-2.5-flash")
  *
  * This module is server-only — never import from client code.
  */
 
-const XAI_BASE_URL = "https://api.x.ai/v1";
+// --- Gemini ---
+let geminiClient: GoogleGenAI | null = null;
 
-function getXaiKey(): string | null {
-  const key = process.env.XAI_API_KEY;
+function getGeminiClient(): GoogleGenAI | null {
+  if (geminiClient) return geminiClient;
+  const key = process.env.GEMINI_API_KEY;
   if (!key) {
-    console.error("[AI] XAI_API_KEY is not set in environment variables.");
+    console.error("[AI] GEMINI_API_KEY is not set.");
     return null;
   }
-  return key.trim();
+  geminiClient = new GoogleGenAI({ apiKey: key.trim() });
+  return geminiClient;
 }
 
-function getXaiModel(): string {
-  const model = process.env.XAI_MODEL || "grok-3-mini";
-  console.log("[AI] Using Grok model:", model);
-  return model;
+function getGeminiModel(): string {
+  return process.env.GEMINI_MODEL || "gemini-2.5-flash";
 }
 
 // --- z-ai SDK (sandbox fallback) ---
@@ -51,66 +53,38 @@ async function isSandboxAIAvailable(): Promise<boolean> {
 
 function noAIProviderError(): Error {
   return new Error(
-    "AI features require an xAI (Grok) API key. Set XAI_API_KEY in your " +
-    "environment variables (Vercel → Settings → Environment Variables). " +
-    "Get a key at https://console.x.ai"
+    "AI features require a Gemini API key. Set GEMINI_API_KEY in your " +
+    "environment variables. Get a free key at https://aistudio.google.com/app/apikey"
   );
 }
 
 /**
- * Run a single text completion via Grok (xAI).
- * Returns the raw text response.
+ * Run a single text completion via Gemini.
  */
 export async function aiComplete(
   systemPrompt: string,
   userPrompt: string
 ): Promise<string> {
-  const key = getXaiKey();
+  const client = getGeminiClient();
 
-  if (key) {
+  if (client) {
     try {
-      const res = await fetch(`${XAI_BASE_URL}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-        },
-        body: JSON.stringify({
-          model: getXaiModel(),
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          temperature: 0.7,
-        }),
+      const response = await client.models.generateContent({
+        model: getGeminiModel(),
+        contents: `${systemPrompt}\n\n${userPrompt}`,
       });
-
-      if (!res.ok) {
-        const errBody = await res.text();
-        console.error("[AI] Grok API error:", res.status, errBody);
-        throw new Error(
-          `Grok API error (${res.status}): ${errBody.slice(0, 200)}` +
-          `. Check XAI_API_KEY and XAI_MODEL env vars.`
-        );
-      }
-
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content ?? "";
-      if (content.trim()) return content.trim();
+      const text = response.text;
+      if (text && text.trim()) return text.trim();
     } catch (err) {
-      // Re-throw if it's already our formatted error
-      if (err instanceof Error && err.message.startsWith("Grok API error")) {
-        throw err;
-      }
-      console.error("[AI] Grok request failed:", err);
+      console.error("[AI] Gemini error:", err);
       throw new Error(
-        "Grok request failed: " +
+        "Gemini API error: " +
         (err instanceof Error ? err.message : "Unknown error")
       );
     }
   }
 
-  // Sandbox fallback (z-ai-web-dev-sdk).
+  // Sandbox fallback
   if (await isSandboxAIAvailable()) {
     const zai = await getZAI();
     const completion = await zai.chat.completions.create({
@@ -128,8 +102,7 @@ export async function aiComplete(
 }
 
 /**
- * Extract a JSON value from an LLM response that may be wrapped in
- * ```json ... ``` fences or contain stray prose.
+ * Extract a JSON value from an LLM response.
  */
 export function extractJSON<T = unknown>(raw: string): T {
   if (!raw) throw new Error("Empty AI response");
@@ -167,66 +140,41 @@ export function extractJSON<T = unknown>(raw: string): T {
 }
 
 /**
- * Analyze a meal photo with Grok Vision.
- * Grok supports image_url with base64 data URLs (OpenAI-compatible format).
+ * Analyze a meal photo with Gemini Vision.
  */
 export async function aiAnalyzeImage(
   imageBase64: string,
   mimeType: string,
   prompt: string
 ): Promise<string> {
-  const key = getXaiKey();
+  const client = getGeminiClient();
 
-  if (key) {
+  if (client) {
     try {
-      const dataUrl = `data:${mimeType};base64,${imageBase64}`;
-
-      const res = await fetch(`${XAI_BASE_URL}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-        },
-        body: JSON.stringify({
-          model: getXaiModel(),
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: dataUrl } },
-              ],
+      const response = await client.models.generateContent({
+        model: getGeminiModel(),
+        contents: [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType,
+              data: imageBase64,
             },
-          ],
-          temperature: 0.7,
-        }),
+          },
+        ],
       });
-
-      if (!res.ok) {
-        const errBody = await res.text();
-        console.error("[AI] Grok Vision error:", res.status, errBody);
-        throw new Error(
-          `Grok Vision error (${res.status}): ${errBody.slice(0, 200)}` +
-          `. Check XAI_API_KEY env var.`
-        );
-      }
-
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content ?? "";
-      if (content.trim()) return content.trim();
+      const text = response.text;
+      if (text && text.trim()) return text.trim();
     } catch (err) {
-      if (err instanceof Error && err.message.startsWith("Grok Vision error")) {
-        throw err;
-      }
-      console.error("[AI] Grok Vision request failed:", err);
+      console.error("[AI] Gemini Vision error:", err);
       throw new Error(
-        "Grok Vision request failed: " +
+        "Gemini Vision error: " +
         (err instanceof Error ? err.message : "Unknown error")
       );
     }
   }
 
-  // --- z-ai SDK vision fallback (sandbox only) ---
+  // Sandbox fallback
   if (await isSandboxAIAvailable()) {
     const zai = await getZAI();
     const dataUrl = `data:${mimeType};base64,${imageBase64}`;
