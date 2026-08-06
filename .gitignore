@@ -64,3 +64,11 @@ server.log
 /.zscripts/
 /upload/
 mini-services/
+
+# Local deployment files
+Caddyfile
+DEPLOY.md
+
+# Local preview images
+v-hero-fixed.png
+v-narrow.png
