@@ -23,14 +23,14 @@ import { env } from "@/lib/env";
  * image inputs, and is available on the Gemini Developer API free tier within
  * Google's current quota limits.
  */
-const DEFAULT_MODEL = "gemini-2.5-flash-lite";
+const DEFAULT_MODEL = "gemini-3.1-flash-lite";
 
 /**
  * A secondary model is tried only when the first model is unavailable (for
  * example, a retired model name or an account without access). Do not add
  * preview model names here: preview models can be shut down without notice.
  */
-const FALLBACK_MODELS = ["gemini-2.5-flash"] as const;
+const FALLBACK_MODELS = ["gemini-3.5-flash-lite"] as const;
 
 /** A single client is reused for the life of the server process. */
 let geminiClient: GoogleGenAI | null = null;
