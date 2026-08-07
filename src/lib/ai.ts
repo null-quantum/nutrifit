@@ -1,5 +1,6 @@
 import ZAI from "z-ai-web-dev-sdk";
 import { GoogleGenAI } from "@google/genai";
+import { env } from "@/lib/env";
 
 /**
  * Shared AI helper for NutriFit.
@@ -19,7 +20,7 @@ let geminiClient: GoogleGenAI | null = null;
 
 function getGeminiClient(): GoogleGenAI | null {
   if (geminiClient) return geminiClient;
-  const key = process.env.GEMINI_API_KEY;
+  const key = env.geminiApiKey;
   if (!key) {
     console.error("[AI] GEMINI_API_KEY is not set.");
     return null;
@@ -29,7 +30,7 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 function getGeminiModel(): string {
-  return process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  return env.geminiModel;
 }
 
 // --- z-ai SDK (sandbox fallback) ---

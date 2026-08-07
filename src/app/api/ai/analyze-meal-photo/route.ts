@@ -18,6 +18,10 @@ import type { MealEstimate } from "@/lib/types";
  */
 export async function POST(request: Request) {
   try {
+    if (!request.headers.get("content-type")?.includes("application/json")) {
+      throw new AuthError("Content-Type must be application/json", 400);
+    }
+
     const user = await getSession();
     if (!user) {
       throw new AuthError("Not authenticated", 401);

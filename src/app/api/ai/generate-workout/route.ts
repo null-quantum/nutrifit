@@ -15,6 +15,10 @@ import type { Exercise, SafeUser } from "@/lib/types";
  */
 export async function POST(request: Request) {
   try {
+    if (!request.headers.get("content-type")?.includes("application/json")) {
+      throw new AuthError("Content-Type must be application/json", 400);
+    }
+
     const session = await getSession();
     if (!session) {
       throw new AuthError("Unauthorized — please sign in.", 401);

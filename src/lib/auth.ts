@@ -3,8 +3,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { db } from "@/lib/db";
 import type { SafeUser } from "@/lib/types";
+import { env, assertServerEnv } from "@/lib/env";
 
-const JWT_SECRET = process.env.JWT_SECRET || "nutrifit-dev-secret-change-in-production";
+assertServerEnv();
+
+const JWT_SECRET = env.jwtSecret;
 const COOKIE_NAME = "nutrifit_token";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 

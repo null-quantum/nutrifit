@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession, toSafeUser, AuthError } from "@/lib/auth";
 import { aiComplete } from "@/lib/ai";
+import { checkRateLimit } from "@/lib/rate-limit";
 import type { SafeUser } from "@/lib/types";
 
 /**
@@ -37,6 +38,18 @@ type MealEntry = {
 
 export async function POST(request: Request) {
   try {
+    if (!request.headers.get("content-type")?.includes("application/json")) {
+      throw new AuthError("Content-Type must be application/json", 400);
+    }
+
+    const rateLimit = await checkRateLimit(request, "ai-chat", 15, 60_000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } }
+      );
+    }
+
     const session = await getSession();
     if (!session) {
       throw new AuthError("Not authenticated", 401);

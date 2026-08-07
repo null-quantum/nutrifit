@@ -4,6 +4,10 @@ import { verifyPassword, setAuthCookie, toSafeUser, AuthError } from "@/lib/auth
 
 export async function POST(request: Request) {
   try {
+    if (!request.headers.get("content-type")?.includes("application/json")) {
+      throw new AuthError("Content-Type must be application/json", 400);
+    }
+
     const body = await request.json().catch(() => ({}));
     const email = String(body?.email ?? "").trim().toLowerCase();
     const password = String(body?.password ?? "");
