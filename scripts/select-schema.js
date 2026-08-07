@@ -1,57 +1,101 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+
 /**
- * Selects the correct Prisma schema based on the DATABASE_PROVIDER env var.
+ * Prisma Schema Selector
  *
- *   DATABASE_PROVIDER=sqlite     (default) → uses prisma/schema.prisma
- *   DATABASE_PROVIDER=postgresql            → uses prisma/schema.postgres.prisma
+ * Supports:
+ * DATABASE_PROVIDER=sqlite
+ * DATABASE_PROVIDER=postgres
+ * DATABASE_PROVIDER=postgresql
  *
- * The chosen schema is copied to prisma/schema.prisma so all subsequent
- * `prisma` CLI commands (generate, db push, migrate) operate on the right
- * provider. This lets the same repo run on SQLite locally and PostgreSQL on
- * Vercel without manual file swaps.
+ * Default:
+ * sqlite
  *
  * Usage:
- *   node scripts/select-schema.js            # auto-select from env var
- *   node scripts/select-schema.js postgres   # force postgresql
- *   node scripts/select-schema.js sqlite     # force sqlite
+ * node scripts/select-schema.js
+ * node scripts/select-schema.js sqlite
+ * node scripts/select-schema.js postgres
+ * node scripts/select-schema.js postgresql
  */
+
 const fs = require("fs");
 const path = require("path");
 
 const prismaDir = path.join(__dirname, "..", "prisma");
-const target = path.join(prismaDir, "schema.prisma");
-const sqliteSrc = path.join(prismaDir, "schema.sqlite.prisma");
-const postgresSrc = path.join(prismaDir, "schema.postgres.prisma");
 
-// Determine the desired provider.
-const forced = process.argv[2];
-let provider =
-  forced === "postgres" || forced === "postgresql"
-    ? "postgresql"
-    : forced === "sqlite"
-    ? "sqlite"
-    : process.env.DATABASE_PROVIDER || "sqlite";
+const SQLITE_SCHEMA = path.join(prismaDir, "schema.sqlite.prisma");
+const POSTGRES_SCHEMA = path.join(prismaDir, "schema.postgres.prisma");
+const TARGET_SCHEMA = path.join(prismaDir, "schema.prisma");
 
-// Normalize — treat anything that isn't explicitly "postgresql" as sqlite
-// (safe default for local dev).
-if (provider !== "postgresql") provider = "sqlite";
+// ----------------------------------------------------
+// Read provider
+// ----------------------------------------------------
 
-// The current schema.prisma IS the sqlite source (kept in place for editor
-// tooling + default), so only swap when postgres is requested.
-if (provider === "postgresql") {
-  if (!fs.existsSync(postgresSrc)) {
-    console.error(
-      "✗ prisma/schema.postgres.prisma not found. Falling back to sqlite."
+const cliProvider = process.argv[2];
+const envProvider = process.env.DATABASE_PROVIDER;
+
+let provider = (cliProvider || envProvider || "sqlite")
+  .trim()
+  .toLowerCase();
+
+// Accept common aliases
+switch (provider) {
+  case "postgres":
+  case "postgresql":
+  case "pg":
+    provider = "postgresql";
+    break;
+
+  case "sqlite":
+    provider = "sqlite";
+    break;
+
+  default:
+    console.warn(
+      `⚠ Unknown DATABASE_PROVIDER="${provider}". Falling back to SQLite.`
     );
-    process.exit(0);
-  }
-  fs.copyFileSync(postgresSrc, target);
-  console.log("✓ Prisma schema → PostgreSQL (prisma/schema.postgres.prisma)");
-} else {
-  // Restore the sqlite schema from the committed schema.sqlite.prisma if it
-  // exists; otherwise leave schema.prisma as-is (it's already sqlite).
-  if (fs.existsSync(sqliteSrc)) {
-    fs.copyFileSync(sqliteSrc, target);
-  }
-  console.log("✓ Prisma schema → SQLite (prisma/schema.prisma)");
+    provider = "sqlite";
+}
+
+// ----------------------------------------------------
+// Select schema
+// ----------------------------------------------------
+
+const sourceSchema =
+  provider === "postgresql"
+    ? POSTGRES_SCHEMA
+    : SQLITE_SCHEMA;
+
+// ----------------------------------------------------
+// Validate
+// ----------------------------------------------------
+
+if (!fs.existsSync(sourceSchema)) {
+  console.error(`❌ Prisma schema not found:
+
+${sourceSchema}
+
+Please make sure the schema file exists.`);
+
+  process.exit(1);
+}
+
+// ----------------------------------------------------
+// Copy schema
+// ----------------------------------------------------
+
+try {
+  fs.copyFileSync(sourceSchema, TARGET_SCHEMA);
+
+  console.log(
+    `✓ Prisma schema → ${
+      provider === "postgresql"
+        ? "PostgreSQL"
+        : "SQLite"
+    } (${path.basename(sourceSchema)})`
+  );
+} catch (err) {
+  console.error("❌ Failed to copy Prisma schema.");
+  console.error(err);
+  process.exit(1);
 }
